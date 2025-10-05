@@ -1,0 +1,135 @@
+.viewerContainer {
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(68,72,89,0.08);
+  overflow: hidden;
+  border: 1px solid #ffffff;
+}
+
+
+.viewerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f7f7fa;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 18px 24px;
+  gap: 1rem;
+}
+
+.viewerHeaderLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.viewerHeaderIcon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border-radius: 8px;
+}
+
+.viewerHeaderTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #22223b;
+  margin-bottom: 2px;
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.viewerHeaderType {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.viewerHeaderActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.openBtn,
+.downloadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, color 0.2s;
+}
+
+.openBtn {
+  background: #fff;
+  color: #22223b;
+  border: 1px solid #e5e7eb;
+}
+
+.openBtn:hover {
+  background: #f3f4f6;
+}
+
+.downloadBtn {
+  background: #008fc7;
+  color: #fff;
+  border: none;
+}
+
+.downloadBtn:hover {
+  background: #005fa3;
+}
+
+.pdfControls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 20px;
+  gap: 1rem;
+}
+
+.pdfBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #22223b;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.pdfBtn:disabled {
+  background: #f3f4f6;
+  color: #b0b0b0;
+  cursor: not-allowed;
+}
+
+.pdfBtn:hover:not(:disabled) {
+  background: #eaf6fb;
+  color: #008fc7;
+}
+
+.pdfZoomInfo {
+  font-size: 0.9rem;
+  color: #22223b;
+  margin: 0 8px;
+  min-width: 60px;
+  text-align: center;
+}
+

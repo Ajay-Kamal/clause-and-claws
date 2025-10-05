@@ -1,0 +1,408 @@
+/* Footer.module.css */
+
+/* Main Footer */
+.footer {
+  background-color: #091e39;
+  color: #ffffff;
+  padding: 3rem 0 1rem 0;
+  border-top: 1px solid #404040;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Footer Content Grid */
+.footerContent {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8rem;
+}
+
+/* Brand Section */
+.brandSection {
+  grid-column: 1;
+  margin-bottom: 1rem ;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.logo svg {
+  color: #00a8e6;
+  flex-shrink: 0;
+}
+
+.logoText {
+  font-family: "Nunito", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.brandDescription {
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: #b0b0b0;
+  line-height: 1.6;
+  margin: 0 0 1.5rem 0;
+  max-width: 280px;
+}
+
+/* Social Links */
+.socialLinks {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.socialLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: #404040;
+  color: #b0b0b0;
+  border-radius: 50%;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
+}
+
+.socialLink:hover {
+  background-color: #00a8e6;
+  color: #ffffff;
+  transform: translateY(-2px);
+  border-color: #00a8e6;
+  box-shadow: 0 4px 12px rgba(0, 168, 230, 0.3);
+}
+
+.socialLink:focus {
+  outline: 2px solid #00a8e6;
+  outline-offset: 2px;
+}
+
+/* Footer Sections */
+.footerSection {
+  grid-column: span 1;
+}
+
+.sectionTitle {
+  font-family: "Nunito", sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 1.25rem 0;
+  line-height: 1.3;
+}
+
+.linkList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.linkList li {
+  margin-bottom: 0.75rem;
+}
+
+.linkList li:last-child {
+  margin-bottom: 0;
+}
+
+.footerLink {
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: #b0b0b0;
+  text-decoration: none;
+  transition: color 0.3s ease;
+  line-height: 1.5;
+}
+
+.footerLink:hover {
+  color: #00a8e6;
+}
+
+.footerLink:focus {
+  color: #00a8e6;
+  outline: 1px solid #00a8e6;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Footer Bottom */
+.footerBottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 2rem;
+  border-top: 1px solid #404040;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.copyright {
+  flex: 1;
+}
+
+.copyright p {
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #808080;
+  margin: 0;
+}
+
+.legalLinks {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.legalLink {
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #808080;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.legalLink:hover {
+  color: #00a8e6;
+}
+
+.legalLink:focus {
+  color: #00a8e6;
+  outline: 1px solid #00a8e6;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .footerContent {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+  
+  .brandSection {
+    grid-column: 1 / -1;
+    margin-bottom: 1rem;
+  }
+  
+  .brandDescription {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .footer {
+    padding: 2.5rem 0 1rem 0;
+  }
+  
+  .footerContent {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+  
+  .footerBottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.5rem;
+  }
+  
+  .legalLinks {
+    gap: 1.5rem;
+  }
+  
+  .socialLinks {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 0.75rem;
+  }
+  
+  .footerContent {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    text-align: left;
+  }
+  
+  .brandSection {
+    text-align: left;
+  }
+  
+  .socialLinks {
+    justify-content: flex-start;
+  }
+  
+  .legalLinks {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .logo {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 2rem 0 1rem 0;
+  }
+  
+  .container {
+    padding: 0 0.5rem;
+  }
+  
+  .footerContent {
+    gap: 1.5rem;
+  }
+  
+  .socialLink {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .logoText {
+    font-size: 1.25rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1rem;
+  }
+  
+  .footerLink {
+    font-size: 0.875rem;
+  }
+  
+  .legalLink {
+    font-size: 0.8125rem;
+  }
+  
+  .copyright p {
+    font-size: 0.8125rem;
+  }
+}
+
+/* Focus States for Accessibility */
+.socialLink:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.socialLink:focus-visible {
+  outline: 2px solid #00a8e6;
+  outline-offset: 2px;
+}
+
+.footerLink:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.footerLink:focus-visible {
+  outline: 1px solid #00a8e6;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.legalLink:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.legalLink:focus-visible {
+  outline: 1px solid #00a8e6;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .footer {
+    background-color: #000000;
+    border-top: 2px solid #ffffff;
+  }
+  
+  .socialLink {
+    background-color: #000000;
+    border: 2px solid #ffffff;
+  }
+  
+  .socialLink:hover {
+    background-color: #ffffff;
+    color: #000000;
+  }
+  
+  .footerBottom {
+    border-top: 2px solid #ffffff;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .socialLink {
+    transition: none;
+  }
+  
+  .socialLink:hover {
+    transform: none;
+  }
+  
+  .footerLink,
+  .legalLink {
+    transition: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .footer {
+    background: none;
+    color: #000;
+    border-top: 1px solid #000;
+  }
+  
+  .socialLinks {
+    display: none;
+  }
+  
+  .logoText {
+    color: #000;
+  }
+  
+  .sectionTitle {
+    color: #000;
+  }
+  
+  .footerLink,
+  .legalLink {
+    color: #000;
+  }
+  
+  .brandDescription,
+  .copyright p {
+    color: #333;
+  }
+  
+  .footerLink[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.75rem;
+  }
+}

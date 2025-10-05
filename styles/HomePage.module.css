@@ -1,0 +1,301 @@
+.homePage {
+  min-height: 100vh;
+  background-color: rgb(246,246,246);
+  width: 100%;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.featuredSection {
+  padding: 4rem 0;
+  background-color: rgb(246,246,246);
+}
+
+/* Section Header */
+.sectionHeader {
+  margin-bottom: 2rem;
+  width: 100%;
+  text-align: center;
+}
+
+.sectionTitle {
+  color: #000;
+  font-family: "Nunito", sans-serif;
+  font-size: 2.25rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.articlesContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(68, 72, 89, 0.1);
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.emptyStateIcon {
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  color: #6b7280;
+}
+
+.emptyStateTitle {
+  font-family: "Nunito", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #444859;
+  margin: 0 0 1rem 0;
+  line-height: 1.3;
+}
+
+.emptyStateDescription {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 500px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .sectionTitle {
+    font-size: 2.25rem;
+  }
+
+  .featuredSection {
+    padding: 3rem 0;
+  }
+
+  .sectionHeader {
+    margin-bottom: 2.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .featuredSection {
+    padding: 2.5rem 0;
+  }
+
+  .sectionTitle {
+    font-size: 2rem;
+  }
+
+  .sectionTitle::after {
+    width: 60px;
+    height: 3px;
+  }
+
+  .sectionHeader {
+    margin-bottom: 2rem;
+  }
+
+  .articlesContainer {
+    gap: 1.5rem;
+  }
+
+  .emptyState {
+    padding: 3rem 1.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .emptyStateIcon {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 1rem;
+  }
+
+  .emptyStateTitle {
+    font-size: 1.25rem;
+  }
+
+  .emptyStateDescription {
+    font-size: 0.9375rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 0.75rem;
+  }
+
+  .featuredSection {
+    padding: 2rem 0;
+  }
+
+  .sectionTitle {
+    font-size: 1.75rem;
+  }
+
+  .sectionTitle::after {
+    width: 50px;
+  }
+
+  .articlesContainer {
+    gap: 1.25rem;
+  }
+
+  .emptyState {
+    padding: 2rem 1rem;
+  }
+
+  .emptyStateIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .emptyStateTitle {
+    font-size: 1.125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+
+  .featuredSection {
+    padding: 1.5rem 0;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .sectionHeader {
+    margin-bottom: 1.5rem;
+  }
+
+  .articlesContainer {
+    gap: 1rem;
+  }
+
+  .emptyState {
+    padding: 1.5rem 0.75rem;
+    margin: 1rem 0;
+  }
+
+  .emptyStateIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .emptyStateTitle {
+    font-size: 1rem;
+  }
+
+  .emptyStateDescription {
+    font-size: 0.875rem;
+  }
+}
+
+/* Focus States for Accessibility */
+.emptyState:focus-within {
+  outline: 2px solid #00a8e6;
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .emptyState {
+    border: 2px solid #444859;
+  }
+
+  .emptyStateIcon {
+    background: #e0e0e0;
+    border: 2px solid #6b7280;
+  }
+
+  .sectionTitle::after {
+    background: #00a8e6;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .sectionTitle::after {
+    transition: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .homePage {
+    background: none;
+  }
+
+  .featuredSection {
+    background: none;
+  }
+
+  .emptyState {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+
+  .sectionTitle {
+    color: #000;
+  }
+
+  .sectionTitle::after {
+    display: none;
+  }
+
+  .emptyStateIcon {
+    background: none;
+    border: 1px solid #000;
+  }
+}
+
+/* Animation for empty state icon */
+.emptyStateIcon svg {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .emptyStateIcon svg {
+    animation: none;
+  }
+}

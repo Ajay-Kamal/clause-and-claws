@@ -1,0 +1,272 @@
+/* Article Container - Natural reading experience */
+.articleContainer {
+  width: 100%;
+  max-width: 100%;
+  background: #ffffff;
+}
+
+.downloadSection {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 0;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.downloadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #22223b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.downloadBtn:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+/* Article Content - Natural typography like Medium/Substack */
+.articleContent {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.75;
+  color: #1a1a1a;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+/* Headings */
+.articleContent :global(h1) {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #111827;
+  margin-top: 2.5rem;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.025em;
+}
+
+.articleContent :global(h2) {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #111827;
+  margin-top: 2.5rem;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.articleContent :global(h3) {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #111827;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.articleContent :global(h4) {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #374151;
+  margin-top: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* Paragraphs - Natural reading flow */
+.articleContent :global(p) {
+  margin-bottom: 1.75rem;
+  text-align: justify;
+  hyphens: auto;
+  word-spacing: 0.05em;
+}
+
+.articleContent :global(p:first-of-type) {
+  margin-top: 0;
+}
+
+.articleContent :global(p:last-of-type) {
+  margin-bottom: 0;
+}
+
+/* First paragraph after heading - slightly larger */
+.articleContent :global(h1 + p),
+.articleContent :global(h2 + p),
+.articleContent :global(h3 + p) {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #374151;
+}
+
+/* Drop cap for first paragraph (optional, elegant touch) */
+.articleContent :global(p:first-of-type::first-letter) {
+  font-size: 3.5rem;
+  font-weight: 700;
+  line-height: 1;
+  float: left;
+  margin-right: 0.5rem;
+  margin-top: 0.1rem;
+  color: #111827;
+}
+
+/* Lists */
+.articleContent :global(ul),
+.articleContent :global(ol) {
+  margin-bottom: 1.75rem;
+  padding-left: 2rem;
+}
+
+.articleContent :global(li) {
+  margin-bottom: 0.5rem;
+  line-height: 1.75;
+}
+
+/* Links */
+.articleContent :global(a) {
+  color: #2563eb;
+  text-decoration: underline;
+  text-decoration-color: #93c5fd;
+  text-underline-offset: 2px;
+  transition: all 0.2s;
+}
+
+.articleContent :global(a:hover) {
+  color: #1d4ed8;
+  text-decoration-color: #2563eb;
+}
+
+/* Blockquotes */
+.articleContent :global(blockquote) {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1.5rem;
+  margin: 2rem 0;
+  font-style: italic;
+  color: #4b5563;
+  font-size: 1.1rem;
+}
+
+/* Code blocks */
+.articleContent :global(code) {
+  background: #f3f4f6;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+  font-family: 'Courier New', monospace;
+}
+
+.articleContent :global(pre) {
+  background: #1f2937;
+  color: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 2rem 0;
+  line-height: 1.6;
+}
+
+.articleContent :global(pre code) {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+}
+
+/* Images */
+.articleContent :global(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 2rem 0;
+}
+
+/* Tables */
+.articleContent :global(table) {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 2rem 0;
+}
+
+.articleContent :global(th),
+.articleContent :global(td) {
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.articleContent :global(th) {
+  background: #f9fafb;
+  font-weight: 600;
+}
+
+/* Page breaks (visual separator between PDF pages) */
+.articleContent :global(.page-break) {
+  margin: 3rem 0;
+  border-top: 2px solid #e5e7eb;
+  position: relative;
+}
+
+.articleContent :global(.page-break::after) {
+  content: "• • •";
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  padding: 0 1rem;
+  color: #9ca3af;
+  font-size: 0.875rem;
+  letter-spacing: 0.5rem;
+}
+
+/* Loading state */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* Error state */
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #dc2626;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .articleContent {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .articleContent :global(h1) {
+    font-size: 1.875rem;
+  }
+
+  .articleContent :global(h2) {
+    font-size: 1.5rem;
+  }
+
+  .articleContent :global(h3) {
+    font-size: 1.25rem;
+  }
+
+  .articleContent :global(p:first-of-type::first-letter) {
+    font-size: 2.5rem;
+  }
+}

@@ -1,0 +1,825 @@
+/* AboutUs.module.css */
+
+/* Main container */
+.aboutPage {
+  min-height: 100vh;
+  background-color: rgb(255, 250, 243);
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Hero Section */
+.heroSection {
+  background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%);
+  padding: 4rem 2rem;
+}
+
+.heroContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.heroTitle {
+  font-family: "Nunito", sans-serif;
+  font-size: 3rem;
+  font-weight: 800;
+  color: #000000;
+  margin: 0 0 1rem 0;
+  line-height: 1.2;
+}
+
+.heroSubtitle {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: justify;
+}
+
+/* Journal Section */
+.journalSection {
+  padding: 4rem 0;
+  background-color: #ffffff;
+}
+
+.journalContent {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.journalTitle {
+  font-family: "Nunito", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 2rem 0;
+  line-height: 1.2;
+}
+
+.journalDescription {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.7;
+  text-align: justify;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.statCard {
+  text-align: center;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(68, 72, 89, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(68, 72, 89, 0.15);
+}
+
+.statNumber {
+  font-family: "Nunito", sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: rgb(238 167 34);
+  margin: 0 0 0.5rem 0;
+  line-height: 1;
+}
+
+.statLabel {
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Team Section */
+.teamSection {
+  padding: 4rem 0;
+  background-color: rgb(255, 250, 243);
+}
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.sectionHeader h2 {
+  font-family: "Nunito", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 1rem 0;
+  line-height: 1.2;
+}
+
+.sectionSubtitle {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.adminsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 2rem;
+}
+
+/* Admin Card */
+.adminCard {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(68, 72, 89, 0.1);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.adminCard:hover {
+  box-shadow: 0 4px 16px rgba(68, 72, 89, 0.15);
+  transform: translateY(-2px);
+}
+
+.adminHeader {
+  padding: 2rem;
+  background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.profileImageContainer {
+  flex-shrink: 0;
+}
+
+.profileImage {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid #ffffff;
+  box-shadow: 0 4px 16px rgba(68, 72, 89, 0.15);
+}
+
+.profilePlaceholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #00a8e6 0%, #10b981 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Nunito", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.profileImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.adminInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.adminName {
+  font-family: "Nunito", sans-serif;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+}
+
+.adminTitle {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #efbf04;
+  margin: 0 0 1.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.contactLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.contactLink {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.contactLink:hover {
+  color: #00a8e6;
+}
+
+.contactLink svg {
+  flex-shrink: 0;
+}
+
+/* Admin Content */
+.adminContent {
+  padding: 2rem;
+}
+
+.bioSection {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-family: "Nunito", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0 0 1rem 0;
+}
+
+.bio {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.7;
+  text-align: justify;
+}
+
+.expertiseSection {
+  margin-bottom: 2rem;
+}
+
+.expertiseTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.expertiseTag {
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #091e39;
+  background-color: rgba(26, 38, 43, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+}
+
+.achievementsSection {
+  margin-bottom: 0;
+}
+
+.achievementsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.achievementItem {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+}
+
+.achievementItem:last-child {
+  margin-bottom: 0;
+}
+
+.achievementItem svg {
+  flex-shrink: 0;
+  color: #10b981;
+}
+
+/* Values Section */
+.valuesSection {
+  padding: 4rem 0;
+  background-color: #ffffff;
+}
+
+.valuesTitle {
+  font-family: "Nunito", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #444859;
+  margin: 0 0 3rem 0;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.valuesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.valueCard {
+  text-align: center;
+  padding: 2rem;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(68, 72, 89, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.valueCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(68, 72, 89, 0.15);
+}
+
+.valueIcon {
+  width: 64px;
+  height: 64px;
+  background: linear-gradient(135deg, #00a8e6 0%, #10b981 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem auto;
+  color: #ffffff;
+}
+
+.valueTitle {
+  font-family: "Nunito", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #444859;
+  margin: 0 0 1rem 0;
+  line-height: 1.3;
+}
+
+.valueDescription {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* CTA Section */
+.ctaSection {
+  padding: 4rem 0;
+  background: linear-gradient(135deg, #444859 0%, #00a8e6 100%);
+  color: #ffffff;
+}
+
+.ctaContent {
+  text-align: center;
+}
+
+.ctaTitle {
+  font-family: "Nunito", sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 1rem 0;
+  line-height: 1.2;
+}
+
+.ctaDescription {
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0 0 2rem 0;
+  line-height: 1.6;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 2rem;
+}
+
+.ctaButtons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  cursor: pointer;
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.875rem 2rem;
+  background-color: #ffffff;
+  color: #444859;
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ctaButton:hover {
+  background-color: #f5f5f5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.ctaButtonSecondary {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.875rem 2rem;
+  background-color: transparent;
+  color: #ffffff;
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+  border: 2px solid #ffffff;
+  border-radius: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ctaButtonSecondary:hover {
+  background-color: #ffffff;
+  color: #444859;
+  transform: translateY(-1px);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .heroTitle {
+    font-size: 2.5rem;
+  }
+
+  .journalTitle {
+    font-size: 2rem;
+  }
+
+  .sectionTitle {
+    font-size: 2rem;
+  }
+
+  .valuesTitle {
+    font-size: 2rem;
+  }
+
+  .ctaTitle {
+    font-size: 2rem;
+  }
+
+  .adminsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .heroSection {
+    padding: 3rem 1rem;
+  }
+
+  .heroTitle {
+    font-size: 2.25rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1.125rem;
+  }
+
+  .journalSection,
+  .teamSection,
+  .valuesSection,
+  .ctaSection {
+    padding: 3rem 0;
+  }
+
+  .adminHeader {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
+  }
+
+  .profileImage {
+    width: 100px;
+    height: 100px;
+  }
+
+  .adminName {
+    font-size: 1.5rem;
+  }
+
+  .contactLinks {
+    align-items: center;
+  }
+
+  .adminContent {
+    padding: 1.5rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .ctaButtons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ctaButton,
+  .ctaButtonSecondary {
+    width: 200px;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 640px) {
+  .heroTitle {
+    font-size: 2rem;
+  }
+
+  .heroSubtitle {
+    font-size: 1rem;
+  }
+
+  .journalTitle {
+    font-size: 1.75rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.75rem;
+  }
+
+  .valuesTitle {
+    font-size: 1.75rem;
+  }
+
+  .ctaTitle {
+    font-size: 1.75rem;
+  }
+
+  .profileImage {
+    width: 80px;
+    height: 80px;
+  }
+
+  .profilePlaceholder {
+    font-size: 1.5rem;
+  }
+
+  .adminName {
+    font-size: 1.25rem;
+  }
+
+  .adminTitle {
+    font-size: 0.875rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .statCard {
+    padding: 1rem;
+  }
+
+  .statNumber {
+    font-size: 1.5rem;
+  }
+
+  .valuesGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .valueCard {
+    padding: 1.5rem;
+  }
+
+  .valueIcon {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroSection {
+    padding: 2rem 1rem;
+  }
+
+  .journalSection,
+  .teamSection,
+  .valuesSection,
+  .ctaSection {
+    padding: 2rem 0;
+  }
+
+  .container {
+    padding: 0 0.75rem;
+  }
+
+  .heroTitle {
+    font-size: 1.75rem;
+  }
+
+  .journalDescription {
+    font-size: 1rem;
+  }
+
+  .adminCard {
+    margin-bottom: 1rem;
+  }
+
+  .adminHeader {
+    padding: 1rem;
+  }
+
+  .adminContent {
+    padding: 1rem;
+  }
+
+  .expertiseTags {
+    gap: 0.25rem;
+  }
+
+  .expertiseTag {
+    font-size: 0.8125rem;
+    padding: 0.375rem 0.75rem;
+  }
+
+  .ctaDescription {
+    font-size: 1rem;
+  }
+}
+
+/* Focus States for Accessibility */
+.contactLink:focus {
+  outline: 2px solid #00a8e6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.contactLink:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.contactLink:focus-visible {
+  outline: 2px solid #00a8e6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.ctaButton:focus,
+.ctaButtonSecondary:focus {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+.ctaButton:focus:not(:focus-visible),
+.ctaButtonSecondary:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.ctaButton:focus-visible,
+.ctaButtonSecondary:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .adminCard {
+    border: 2px solid #444859;
+  }
+
+  .statCard,
+  .valueCard {
+    border: 2px solid #444859;
+  }
+
+  .expertiseTag {
+    border: 2px solid #00a8e6;
+  }
+
+  .profilePlaceholder {
+    background: #444859;
+  }
+
+  .valueIcon {
+    background: #444859;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .adminCard,
+  .statCard,
+  .valueCard {
+    transition: none;
+  }
+
+  .adminCard:hover,
+  .statCard:hover,
+  .valueCard:hover {
+    transform: none;
+  }
+
+  .ctaButton,
+  .ctaButtonSecondary {
+    transition: none;
+  }
+
+  .ctaButton:hover,
+  .ctaButtonSecondary:hover {
+    transform: none;
+  }
+
+  .contactLink {
+    transition: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .aboutPage {
+    background: none;
+  }
+
+  .heroSection {
+    background: none;
+  }
+
+  .journalSection,
+  .valuesSection {
+    background: none;
+  }
+
+  .ctaSection {
+    display: none;
+  }
+
+  .adminCard,
+  .statCard,
+  .valueCard {
+    box-shadow: none;
+    border: 1px solid #000;
+  }
+
+  .contactLink {
+    color: #000;
+  }
+
+  .contactLink[href^="mailto:"]::after {
+    content: " (" attr(href) ")";
+  }
+
+  .contactLink[href^="https://"]::after
+  {
+    content: " (" attr(href) ")";
+  }
+}
