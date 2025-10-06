@@ -1,21 +1,3 @@
-:root {
-  --primary-bg: #dadada;
-  --secondary-font: #444859;
-  --button-color: #05303f;
-  --button-hover: #0c4861;
-  --button-active: #1d343d;
-  --white: #ffffff;
-  --light-gray: #f8f9fa;
-  --medium-gray: #e9ecef;
-  --dark-gray: #6c757d;
-  --success: #28a745;
-  --error: #dc3545;
-  --warning: #ffc107;
-  --info: #17a2b8;
-  --shadow-light: rgba(68, 72, 89, 0.08);
-  --shadow-medium: rgba(68, 72, 89, 0.15);
-  --shadow-heavy: rgba(68, 72, 89, 0.25);
-}
 
 .container {
   max-width: 900px;
