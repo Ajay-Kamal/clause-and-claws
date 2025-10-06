@@ -58,17 +58,33 @@ export async function POST(req: Request, context: { params: { id: string } }) {
 
     const utrLink = `${process.env.NEXT_PUBLIC_BASE_URL}/payment/submit-utr?token=${token}`;
     const mailHtml = `
-      <p>Hi ${article.profiles?.full_name ?? "Author"},</p>
-      <p>This is a resend — your article "<strong>${article.title}</strong>" is approved. Please pay and submit UTR:</p>
-      <p><img src="${qrDataUrl}" alt="QR" style="max-width:240px"/></p>
-      <p><a href="${utrLink}">${utrLink}</a></p>
-      <p>Expires: ${expiresAt}</p>
+      <p>Dear ${article.profiles?.full_name ?? "Author"},</p>
+
+<p>This is a resend notification regarding your article titled "<strong>${article.title}</strong>", which has been <strong style="color:#2e7d32;">approved</strong> for publication in the <b>Clause & Claws Journal</b>.</p>
+
+<p>To proceed, please complete the payment using the QR code below and submit your UTR (transaction reference number) through the secure link provided.</p>
+
+<p><b>QR Code:</b><br />
+<img src="${qrDataUrl}" alt="QR Code" style="max-width:240px; margin-top:6px;" /></p>
+
+<p><b>Submit UTR:</b> <a href="${utrLink}" target="_blank" rel="noopener">${utrLink}</a></p>
+
+<p><b>Expires:</b> ${expiresAt}</p>
+
+<p>If you encounter any issues while completing the payment or submitting your UTR, please contact us at <b>clauseandclaws@gmail.com</b>.</p>
+
+<p>Thank you once again for your valuable contribution to <b>Clause & Claws</b>. We look forward to publishing your work soon.</p>
+
+<p>Warm regards,</p>
+<p><b>Editorial Team</b><br />
+<b>Clause & Claws Journal</b></p>
+
     `;
 
     await transporter.sendMail({
       from: `"${process.env.FROM_NAME}" <${process.env.FROM_EMAIL}>`,
       to: article.profiles?.email,
-      subject: "[Law Journal] Approval link (resend) — submit UTR",
+      subject: "[Clause & Claws] Approval link (resend) — submit UTR",
       html: mailHtml,
     });
 

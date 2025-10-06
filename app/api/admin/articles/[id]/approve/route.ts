@@ -5,7 +5,6 @@ import nodemailer from "nodemailer";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import crypto from "crypto";
-import QRCode from "qrcode";
 
 export async function POST(req: Request, context: { params: { id: string } }) {
   const cookieStore = await cookies();
@@ -82,7 +81,8 @@ export async function POST(req: Request, context: { params: { id: string } }) {
   if (tokenErr)
     return NextResponse.json({ error: tokenErr.message }, { status: 500 });
 
-  const qrDataUrl = "https://rvydvbikckoourvzhyml.supabase.co/storage/v1/object/public/QR%20Code/WhatsApp%20Image%202025-10-05%20at%2001.39.57_5500854d.jpg";
+  const qrDataUrl =
+    "https://rvydvbikckoourvzhyml.supabase.co/storage/v1/object/public/QR%20Code/WhatsApp%20Image%202025-10-05%20at%2001.39.57_5500854d.jpg";
 
   try {
     const transporter = nodemailer.createTransport({
@@ -98,21 +98,47 @@ export async function POST(req: Request, context: { params: { id: string } }) {
     const utrLink = `${process.env.NEXT_PUBLIC_BASE_URL}/payment/submit-utr?token=${token}`;
 
     const mailHtml = `
-      <p>Hi ${authorName},</p>
-      <p>Your article "<strong>${article.title}</strong>" has been approved by the editors. Please complete payment using the QR code below or your banking app.</p>
-      <p>This is your token for your article<b>${article.slug}</b></p>
-      <p><img src="${qrDataUrl}" alt="QR code" style="max-width:240px" /></p>
-      <p>After payment, submit your UTR (transaction reference) here:</p>
-      <p><a href="${utrLink}">${utrLink}</a></p>
-      <p>This link expires in 48 hours and can only be used by you.</p>
-      <p>Thanks,<br/>Law Journal Team</p>
+      <p>Dear ${authorName},</p>
+
+        <p>We are pleased to inform you that your article titled "<strong>${article.title}</strong>" has been reviewed and approved by our editorial team for publication in the <b>Clause & Claws Journal</b>.</p>
+
+        <p>We truly appreciate the effort and quality of work you have invested in preparing this submission.</p>
+
+        <p>As part of the publication process, we kindly request you to complete the payment at your convenience using the QR code provided below or through the UPI ID mentioned.</p>
+
+        <p><b>Article Token:</b> ${article.slug}</p>
+
+        <p><b>QR Code:</b><br />
+        <img src="${qrDataUrl}" alt="QR Code" style="max-width:240px;" /></p>
+
+        <p>If the QR code is not displayed, please use this UPI ID: <b>6267535508@ptyes</b></p>
+
+        <p>Once the payment has been completed, please submit your UTR (transaction reference number) through the secure link provided below:</p>
+
+        <p><b>Submit UTR:</b> <a href="${utrLink}" target="_blank" rel="noopener">${utrLink}</a></p>
+
+        <p><b>Kindly note the following:</b></p>
+        <ul>
+          <li>This link is unique to your article and is valid for <b>48 hours</b> only.</li>
+          <li>It should be used solely by you for this transaction.</li>
+          <li>Upon verification of the payment, you will receive a confirmation email along with details regarding the next steps of the publication process.</li>
+        </ul>
+
+        <p>Your contribution is valuable to our journal, and we are committed to ensuring a seamless and professional publishing experience. Should you encounter any difficulties in completing the payment or submission process, please do not hesitate to contact us at <b>clauseandclaws@gmail.com</b>.</p>
+
+        <p>We thank you once again for your trust in Clause & Claws and look forward to showcasing your article to our readers.</p>
+
+        <p>Warm regards,</p>
+        <p><b>Editorial Team</b><br />
+        <b>Clause & Claws</b></p>
+
     `;
 
     await transporter.sendMail({
       from: `"${process.env.FROM_NAME}" <${process.env.FROM_EMAIL}>`,
       to: authorEmail,
       subject:
-        "[Clause and Claws] Your article has been approved — submit payment",
+        "[Clause and Claws] Your article has been approved — Payment Request for Your Approved Article",
       html: mailHtml,
       text: `Hi ${authorName},\nYour article "${article.title}" has been approved. Submit UTR: ${utrLink}`,
     });

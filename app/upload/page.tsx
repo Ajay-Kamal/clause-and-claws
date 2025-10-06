@@ -192,13 +192,9 @@ export default function UploadArticle() {
 
     const allowedTypes = [
       "application/pdf",
-      "application/msword",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "text/plain",
-      "application/rtf",
     ];
     if (!allowedTypes.includes(file.type)) {
-      return "Please upload a PDF, DOC, DOCX, TXT, or RTF file";
+      return "Please upload a PDF file";
     }
     return null;
   };
@@ -722,7 +718,7 @@ export default function UploadArticle() {
                         <input
                           type="file"
                           className={styles.hiddenInput}
-                          accept=".pdf,.doc,.docx,.txt,.rtf"
+                          accept=".pdf"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) handleFileSelect(file);
@@ -731,7 +727,7 @@ export default function UploadArticle() {
                       </label>
                     </p>
                     <p className={styles.supportedFormats}>
-                      Supported formats: PDF, DOC, DOCX, TXT, RTF
+                      Supported format: PDF Only
                     </p>
                     <p className={styles.supportedFormats}>
                       Maximum file size: 10MB

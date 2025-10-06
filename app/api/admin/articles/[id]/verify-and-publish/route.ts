@@ -79,18 +79,28 @@ export async function POST(req: Request, context: { params: { id: string } }) {
     });
 
     const mailHtml = `
-      <p>Hi ${authorName},</p>
-      <p>We have received your payment for the article "<strong>${article.title}</strong>".</p>
-      <p>Your article is now <strong>published</strong> and live at:</p>
-      <p><a href="${articleUrl}">${articleUrl}</a></p>
-      <p>Thanks for your contribution!</p>
-      <p>— Law Journal Team</p>
+      <p>Dear ${authorName},</p>
+
+<p>We are pleased to inform you that we have successfully received your payment for the article titled "<strong>${article.title}</strong>".</p>
+
+<p>Your article has now been <strong style="color:#2e7d32;">published</strong> and is live at the following link:</p>
+
+<p><a href="${articleUrl}" target="_blank" rel="noopener">${articleUrl}</a></p>
+
+<p>We sincerely appreciate your valuable contribution to the <b>Clause & Claws Journal</b>. Your work adds meaningful insight to our growing repository of research and scholarship.</p>
+
+<p>Thank you once again for choosing to publish with us. We look forward to your continued engagement and future submissions.</p>
+
+<p>Warm regards,</p>
+<p><b>Editorial Team</b><br />
+<b>Clause & Claws Journal</b></p>
+
     `;
 
     await transporter.sendMail({
       from: `"${process.env.FROM_NAME}" <${process.env.FROM_EMAIL}>`,
       to: authorEmail,
-      subject: "[Law Journal] Payment received & your article is now live",
+      subject: "[Clause & Claws] Payment received & your article is now live",
       html: mailHtml,
       text: `Payment received for "${article.title}". View: ${articleUrl}`,
     });
