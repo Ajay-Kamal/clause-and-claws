@@ -6,7 +6,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 
-export async function POST(req: Request, context: { params: { id: string } }) {
+export async function POST(req: Request, context: any): Promise<NextResponse> {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -19,6 +19,7 @@ export async function POST(req: Request, context: { params: { id: string } }) {
       },
     }
   );
+
   const articleId = context.params.id;
 
   const {

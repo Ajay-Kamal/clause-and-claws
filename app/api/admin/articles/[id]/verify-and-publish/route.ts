@@ -3,7 +3,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import nodemailer from "nodemailer";
 
-export async function POST(req: Request, context: { params: { id: string } }) {
+export async function POST(req: Request, context: any) {
   const cookiesStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -11,6 +11,9 @@ import Footer from "@/components/Footer";
 export const metadata: Metadata = {
   title: "Law Journal",
   description: "Academic Law Journal Platform",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default async function RootLayout({

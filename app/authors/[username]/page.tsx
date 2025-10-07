@@ -26,7 +26,7 @@ interface Article {
 export default async function AuthorProfile({
   params,
 }: {
-  params: { username: string | Promise<string> };
+  params:any;
 }) {
   const awaitedParams = await params;
   const username =

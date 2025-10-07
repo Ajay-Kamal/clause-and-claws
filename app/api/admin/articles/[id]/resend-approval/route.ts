@@ -6,7 +6,7 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import QRCode from "qrcode";
 
-export async function POST(req: Request, context: { params: { id: string } }) {
+export async function POST(req: Request, context: any) {
   const cookiesStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

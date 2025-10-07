@@ -13,11 +13,7 @@ export const metadata = {
 
 const ARTICLES_PER_PAGE = 12;
 
-export default async function ArticlesPage({
-  searchParams,
-}: {
-  searchParams: { page?: string };
-}) {
+export default async function ArticlesPage({ searchParams }: any) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

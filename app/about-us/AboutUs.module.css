@@ -80,10 +80,12 @@
 
 .statsGrid {
   display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
   margin-top: 3rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .statCard {
@@ -151,8 +153,10 @@
 
 .adminsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 /* Admin Card */
@@ -163,6 +167,8 @@
   box-shadow: 0 2px 8px rgba(68, 72, 89, 0.1);
   overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
 }
 
 .adminCard:hover {
@@ -174,8 +180,10 @@
   padding: 2rem;
   background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 1.5rem;
+  text-align: center;
 }
 
 .profileImageContainer {
@@ -213,11 +221,12 @@
 .adminInfo {
   flex: 1;
   min-width: 0;
+  width: 100%;
 }
 
 .adminName {
   font-family: "Nunito", sans-serif;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #000000;
   margin: 0 0 0.5rem 0;
@@ -226,7 +235,7 @@
 
 .adminTitle {
   font-family: "Open Sans", sans-serif;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: #efbf04;
   margin: 0 0 1.5rem 0;
@@ -238,6 +247,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  align-items: center;
 }
 
 .contactLink {
@@ -250,6 +260,7 @@
   color: #6b7280;
   text-decoration: none;
   transition: color 0.3s ease;
+  word-break: break-all;
 }
 
 .contactLink:hover {
@@ -263,6 +274,9 @@
 /* Admin Content */
 .adminContent {
   padding: 2rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .bioSection {
@@ -279,7 +293,7 @@
 
 .bio {
   font-family: "Open Sans", sans-serif;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 400;
   color: #6b7280;
   margin: 0;
@@ -295,11 +309,12 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  justify-content: center;
 }
 
 .expertiseTag {
   font-family: "Open Sans", sans-serif;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   color: #091e39;
   background-color: rgba(26, 38, 43, 0.1);
@@ -319,13 +334,14 @@
 
 .achievementItem {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.75rem;
   font-family: "Open Sans", sans-serif;
   font-size: 0.875rem;
   font-weight: 400;
   color: #6b7280;
   margin-bottom: 0.75rem;
+  line-height: 1.6;
 }
 
 .achievementItem:last-child {
@@ -335,6 +351,7 @@
 .achievementItem svg {
   flex-shrink: 0;
   color: #10b981;
+  margin-top: 0.25rem;
 }
 
 /* Values Section */
@@ -488,6 +505,35 @@
 }
 
 /* Responsive Design */
+@media (max-width: 1400px) {
+  .adminsGrid {
+    gap: 1.5rem;
+  }
+  
+  .adminCard {
+    min-height: 650px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .adminsGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+  
+  .adminName {
+    font-size: 1.35rem;
+  }
+  
+  .bio {
+    font-size: 0.9rem;
+  }
+  
+  .achievementItem {
+    font-size: 0.8125rem;
+  }
+}
+
 @media (max-width: 1024px) {
   .heroTitle {
     font-size: 2.5rem;
@@ -511,6 +557,29 @@
 
   .adminsGrid {
     grid-template-columns: 1fr;
+    max-width: 600px;
+  }
+  
+  .adminCard {
+    min-height: auto;
+  }
+  
+  .adminHeader {
+    flex-direction: row;
+    text-align: left;
+    gap: 1.5rem;
+  }
+  
+  .adminInfo {
+    text-align: left;
+  }
+  
+  .contactLinks {
+    align-items: flex-start;
+  }
+  
+  .expertiseTags {
+    justify-content: flex-start;
   }
 }
 
@@ -543,6 +612,10 @@
     text-align: center;
     padding: 1.5rem;
   }
+  
+  .adminInfo {
+    text-align: center;
+  }
 
   .profileImage {
     width: 100px;
@@ -555,6 +628,10 @@
 
   .contactLinks {
     align-items: center;
+  }
+  
+  .expertiseTags {
+    justify-content: center;
   }
 
   .adminContent {
@@ -818,8 +895,7 @@
     content: " (" attr(href) ")";
   }
 
-  .contactLink[href^="https://"]::after
-  {
+  .contactLink[href^="https://"]::after {
     content: " (" attr(href) ")";
   }
 }

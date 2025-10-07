@@ -30,8 +30,10 @@ const adminData: Admin[] = [
     bio: "I am Rudransh Singh Rajput, Founder of this online legal publication platform, driven by a passion for law, research, and the power of informed discourse. I have gained diverse legal exposure through internships at the Supreme Court, High Court, corporate law offices, and public sector enterprises. My professional journey so far has equipped me with expertise in various field of law. In an era of dynamic change, where the global legal landscape is constantly evolving, I believe that creating such a platform is not just a professional pursuit but a responsibility. Through this initiative, I aspire to bridge the gap between academia and practice, and to provide a forum where fresh ideas can inspire reforms, debates, and solutions.",
     expertise: [
       "Civil Law",
-      "Criminal Law"," Alternate Dispute Resolution",
-      "Competition Law","Consumer Protection Law"
+      "Criminal Law",
+      " Alternate Dispute Resolution",
+      "Competition Law",
+      "Consumer Protection Law",
     ],
     achievements: [
       "Published Comprehensive legal research on pressing national and international issues.",
@@ -53,31 +55,29 @@ const adminData: Admin[] = [
       "Cybersecurity",
       "Competition Law",
       "Constitutional Law",
-      "Arbiration Law"
+      "Arbiration Law",
     ],
     achievements: [
       "Authored multiple Articles and Research Reports.",
-      "Former Research Manager.",  
+      "Former Research Manager.",
       "Drafting Wizard and Experienced in peer-reviewing.",
       "Data Privacy Professional.",
     ],
   },
   {
     id: 3,
-    name: "Avugaddi Venkat Murali",
+    name: "Venkat Murali Avugaddi",
     title: "Chief Technical Officer",
     email: "venkatmuraliavugaddi@gmail.com",
     linkedin: "https://www.linkedin.com/in/murali-avugaddi-918904269/",
     profileImage: "/images/murali-anna.jpg",
-    bio:"I am Avugaddi Venkat Murali, co‑founder of this online legal publication platform here in India. I am also building my agency, Avugaddi Software Systems. Through our agency, we designed and developed Clause and Claws entirely from the ground up. From constructing the full-stack architecture to creating intuitive user experiences, every aspect of this product reflects innovation, usability, and reliability. Clause and Claws is the first product launched under my agency, representing my vision of blending technology with meaningful impact—creating a digital space where law, research, and fresh ideas can thrive. As a student passionate about technology and design, I focus on learning and applying modern development and UX/UI techniques. Through this initiative, I aim to combine creativity and problem-solving to support the legal community and lay a foundation for future products and services as my agency grows.",
-    expertise:[
-      "UI/UX Design",
-      "Flutter Development"
-    ],
+    bio: "I am Avugaddi Venkat Murali, co‑founder of this online legal publication platform here in India. I am also building my agency, Avugaddi Software Systems. Through our agency, we designed and developed Clause and Claws entirely from the ground up. From constructing the full-stack architecture to creating intuitive user experiences, every aspect of this product reflects innovation, usability, and reliability. Clause and Claws is the first product launched under my agency, representing my vision of blending technology with meaningful impact—creating a digital space where law, research, and fresh ideas can thrive. As a student passionate about technology and design, I focus on learning and applying modern development and UX/UI techniques. Through this initiative, I aim to combine creativity and problem-solving to support the legal community and lay a foundation for future products and services as my agency grows.",
+    expertise: ["UI/UX Design", "Flutter","Backend Development","Spring Boot"],
     achievements: [
-      ""
-    ]
-  }
+      "Co‑founded an online legal publication platform in India.",
+      "Building Avugaddi Software Systems, a student‑led digital agency."
+    ],
+  },
 ];
 
 const LinkedInIcon = () => (
@@ -197,7 +197,10 @@ const AdminCard = ({ admin }: { admin: Admin }) => (
   </div>
 );
 
-export default function AboutUsClient({ stats }: { stats: Stats }) {
+
+//Removed stats for now 
+//Just add the params if needed in future
+export default function AboutUsClient() {
   return (
     <div className={styles.aboutPage}>
       <section className={styles.heroSection}>
@@ -205,14 +208,14 @@ export default function AboutUsClient({ stats }: { stats: Stats }) {
           <h1 className={styles.heroTitle}>
             The Clause and Claws : A Call to Action
           </h1>
-          <p className={styles.heroSubtitle}>
+            <p className={styles.heroSubtitle}>
             The Clause and Claws is more than just a publication; it is a
             movement. We are a dynamic platform dedicated to promoting public
             service by empowering the legal community to tackle the most
             pressing issues of our time. In a world that is rapidly globalizing,
-            we believe it's essential to not only understand the law but to
+            we believe it&apos;s essential to not only understand the law but to
             actively shape it. We provide a space where the legal fraternity can
-            showcase the "need of the hour," turning discourse into impactful
+            showcase the &quot;need of the hour,&quot; turning discourse into impactful
             change. Connecting Global Ideas to Indian Roots Our ambition is
             deeply intertwined with the Viksit Bharat movement. We aim to forge
             a unique path by connecting the best of global legal thought with
@@ -220,7 +223,7 @@ export default function AboutUsClient({ stats }: { stats: Stats }) {
             just reporting on the law; we are building a bridge between
             international principles and our national identity, ensuring that
             our legal future is both globally relevant and authentically Indian.
-          </p>
+            </p>
         </div>
       </section>
 
@@ -232,15 +235,16 @@ export default function AboutUsClient({ stats }: { stats: Stats }) {
             </h2>
             <p className={styles.journalDescription}>
               Our mission is built on three core pillars designed to elevate the
-              legal profession: <br /><b> Championing Legal Advocacy:</b> We provide a
-              powerful platform for passionate advocates to voice their
-              arguments and drive meaningful legal reform.  <br /><b>Driving Legal
-              Research:</b> We are committed to publishing groundbreaking research
-              that challenges the status quo and deepens our collective
-              understanding of the law.
-              <br /><b>
-              Fostering Legal Scholarship:</b> We are a launchpad for the next
-              generation of legal scholars, providing the tools and
+              legal profession: <br />
+              <b> Championing Legal Advocacy:</b> We provide a powerful platform
+              for passionate advocates to voice their arguments and drive
+              meaningful legal reform. <br />
+              <b>Driving Legal Research:</b> We are committed to publishing
+              groundbreaking research that challenges the status quo and deepens
+              our collective understanding of the law.
+              <br />
+              <b>Fostering Legal Scholarship:</b> We are a launchpad for the
+              next generation of legal scholars, providing the tools and
               opportunities they need to achieve their professional and academic
               ambitions. Join us in our mission to not only understand the law
               but to use it as a force for positive change.
@@ -271,9 +275,7 @@ export default function AboutUsClient({ stats }: { stats: Stats }) {
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
             <h2 className={styles.sectionTitle}>Editorial Leadership</h2>
-            <p className={styles.sectionSubtitle}>
-              Meet the Founders
-            </p>
+            <p className={styles.sectionSubtitle}>Meet the Founders</p>
           </div>
           <div className={styles.adminsGrid}>
             {adminData.map((admin) => (
@@ -290,10 +292,13 @@ export default function AboutUsClient({ stats }: { stats: Stats }) {
             <h2 className={styles.ctaTitle}>Get In Touch</h2>
             <p className={styles.ctaDescription}>
               Have questions about our journal or interested in contributing?
-              We'd love to hear from you.
+              We&apos;d love to hear from you.
             </p>
             <div className={styles.ctaButtons}>
-              <a href="mailto:clauseandclaws@gmail.com" className={styles.ctaButton}>
+              <a
+                href="mailto:clauseandclaws@gmail.com"
+                className={styles.ctaButton}
+              >
                 Contact Us
               </a>
               <Link href="/upload" className={styles.ctaButtonSecondary}>

@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import TagPageClient from "../../../components/TagPageClient";
 
-export default async function TagPage({ params }: { params: { tag: string } }) {
+export default async function TagPage({ params }: any) {
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
