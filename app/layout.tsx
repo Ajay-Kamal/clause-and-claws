@@ -9,7 +9,7 @@ import NavBar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "Law Journal",
+  title: "Clause and Claws",
   description: "Academic Law Journal Platform",
   icons: {
     icon: "/favicon.ico",

@@ -1,5 +1,5 @@
 .navbar {
-  font-family: var(--font-custom);
+  font-family: Open-Sans, sans-serif;
   position: sticky;
   top: 0;
   z-index: 1000;
