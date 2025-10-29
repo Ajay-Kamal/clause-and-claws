@@ -6,7 +6,11 @@ import FollowerCount from "@/components/FollowerCount";
 import ArticleCard from "@/components/ArticleCard";
 import { Article } from "@/types";
 
-export default async function AuthorProfile( params: any) {
+export default async function AuthorProfile({
+  params,
+}: {
+  params: { username: string | Promise<any> };
+}) {
   const awaitedParams = await params;
   const username =
     typeof awaitedParams.username === "string"
@@ -97,10 +101,8 @@ export default async function AuthorProfile( params: any) {
                   <h1 className={styles.authorName}>{profile.full_name}</h1>
                   <p className={styles.profession}>{profile.profession}</p>
                   <p className={styles.institution}>{profile.location}</p>
-                  
-                  {profile.bio && (
-                    <p className={styles.bio}>{profile.bio}</p>
-                  )}
+
+                  {profile.bio && <p className={styles.bio}>{profile.bio}</p>}
                 </div>
 
                 {/* Follow + menu buttons */}
@@ -138,11 +140,17 @@ export default async function AuthorProfile( params: any) {
         <div className={styles.publicationsContent}>
           <h2 className={styles.sectionTitle}>Publications</h2>
           {articles?.length === 0 ? (
-            <p className={styles.noArticles}>This author has not published any articles yet.</p>
+            <p className={styles.noArticles}>
+              This author has not published any articles yet.
+            </p>
           ) : (
             <div className={styles.articlesGrid}>
               {(articles as Article[]).map((article) => (
-                <ArticleCard key={article.id} article={article} showAuthor={false} />
+                <ArticleCard
+                  key={article.id}
+                  article={article}
+                  showAuthor={false}
+                />
               ))}
             </div>
           )}
