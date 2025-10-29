@@ -1,3 +1,4 @@
+
 export type Article = {
   id: string;
   author_id: string;
@@ -10,12 +11,12 @@ export type Article = {
   views: number;
   likes: number;
   is_featured?: boolean;
-  publidhed: string;
   created_at: string;
   published: boolean;
   approved?: boolean;
   rejection_reason?: string | null;
   payment_done: boolean;
+  type?: 'Article' | 'Research Paper' | 'Case Notes' | 'Legislative Comments' | 'Book Reviews'; 
   thumbnail_url?: string | null;
   utr_number?: string | null;
   profiles: {

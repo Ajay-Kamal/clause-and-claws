@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
 import styles from "../../styles/UploadArticle.module.css";
 import GoogleModal from "@/components/GoogleModal";
+import CoAuthorSelector from "@/components/CoAuthorSelector";
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -108,6 +109,7 @@ export default function UploadArticle() {
     tags: [] as string[],
     file: null as File | null,
     thumbnail: null as File | null,
+    type: "Article",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -115,6 +117,14 @@ export default function UploadArticle() {
   const [thumbDragActive, setThumbDragActive] = useState(false);
   const [generatedSlug, setGeneratedSlug] = useState("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [selectedCoAuthors, setSelectedCoAuthors] = useState<
+    Array<{
+      id: string;
+      username: string;
+      full_name: string | null;
+      avatar_url: string;
+    }>
+  >([]);
 
   const DEFAULT_THUMBNAIL =
     process.env.NEXT_PUBLIC_DEFAULT_THUMBNAIL_URL ??
@@ -190,9 +200,7 @@ export default function UploadArticle() {
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) return "File size must be less than 10MB";
 
-    const allowedTypes = [
-      "application/pdf",
-    ];
+    const allowedTypes = ["application/pdf"];
     if (!allowedTypes.includes(file.type)) {
       return "Please upload a PDF file";
     }
@@ -334,16 +342,6 @@ export default function UploadArticle() {
         .from("articles")
         .getPublicUrl(filePath);
 
-      // const pdf2htmlRes = await fetch("/api/pdf2html", {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({ slug: uniqueSlug, pdfUrl: urlData.publicUrl }),
-      // });
-      // const pdf2htmlData = await pdf2htmlRes.json();
-      // if (!pdf2htmlData.htmlUrl) {
-      //   throw new Error("Failed to convert PDF to HTML");
-      // }
-
       let thumbnailPublicUrl = DEFAULT_THUMBNAIL;
 
       if (formData.thumbnail) {
@@ -371,7 +369,6 @@ export default function UploadArticle() {
           setErrors({
             thumbnail: "Failed to upload thumbnail: " + thumbError.message,
           });
-          console.log(thumbError);
           setUploading(false);
           return;
         }
@@ -388,9 +385,9 @@ export default function UploadArticle() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          articleId: uniqueSlug, // or articleId if you have it generated after DB insert
-          pdfUrl: urlData.publicUrl, // uploaded PDF public URL
-          logoUrl: `${window.location.origin}/images/final-logo.png`, // your logo URL
+          articleId: uniqueSlug,
+          pdfUrl: urlData.publicUrl,
+          logoUrl: `${window.location.origin}/images/final-logo.png`,
         }),
       });
 
@@ -398,7 +395,7 @@ export default function UploadArticle() {
 
       if (!watermarkData.success) {
         setErrors({ _form: "Failed to add watermark: " + watermarkData.error });
-        console.log("Watermark Error:", watermarkData.error);
+        await supabase.storage.from("articles").remove([filePath]);
         setUploading(false);
         return;
       }
@@ -406,31 +403,50 @@ export default function UploadArticle() {
       const watermarkedPdfUrl = watermarkData.watermarkedPdfUrl;
       setUploadProgress(75);
 
-      // setUploadProgress(75);
-      // {console.log(pdf2htmlData.htmlUrl)}
-
-      const { error: dbError } = await supabase.from("articles").insert({
-        author_id: user.id,
-        slug: uniqueSlug,
-        title: formData.title.trim(),
-        abstract: formData.abstract.trim(),
-        tags: formData.tags.length > 0 ? formData.tags : null,
-        filename: formData.file.name,
-        file_url: urlData.publicUrl, // original PDF
-        watermarked_pdf_url: watermarkedPdfUrl,
-        // html_url: pdf2htmlData.htmlUrl, // watermarked PDF
-        thumbnail_url: thumbnailPublicUrl,
-        views: 0,
-        likes: 0,
-        is_featured: false,
-        published: false,
-      });
+      // Insert article first
+      const { data: articleData, error: dbError } = await supabase
+        .from("articles")
+        .insert({
+          author_id: user.id,
+          slug: uniqueSlug,
+          title: formData.title.trim(),
+          abstract: formData.abstract.trim(),
+          tags: formData.tags.length > 0 ? formData.tags : null,
+          filename: formData.file.name,
+          file_url: urlData.publicUrl,
+          watermarked_pdf_url: watermarkedPdfUrl,
+          thumbnail_url: thumbnailPublicUrl,
+          type: formData.type,
+          views: 0,
+          likes: 0,
+          is_featured: false,
+          published: false,
+        })
+        .select()
+        .single();
 
       if (dbError) {
         await supabase.storage.from("articles").remove([filePath]);
         setErrors({ _form: "Failed to save article: " + dbError.message });
         setUploading(false);
         return;
+      }
+
+      // Insert co-authors if any selected
+      if (selectedCoAuthors.length > 0 && articleData) {
+        const coauthorInserts = selectedCoAuthors.map((coauthor) => ({
+          article_id: articleData.id,
+          coauthor_id: coauthor.id,
+        }));
+
+        const { error: coauthorError } = await supabase
+          .from("article_coauthors")
+          .insert(coauthorInserts);
+
+        if (coauthorError) {
+          console.error("Error adding co-authors:", coauthorError);
+          // proceed — co-author failure shouldn't block main flow
+        }
       }
 
       setUploadProgress(100);
@@ -465,9 +481,29 @@ export default function UploadArticle() {
   return (
     <>
       <div className={styles.container}>
-        <h1 className={styles.title}>Upload Article</h1>
+        <h1 className={styles.title}>Upload Manuscript</h1>
 
         <form onSubmit={handleSubmit} className={styles.form}>
+          <div className={styles.fieldGroup}>
+            <label className={styles.label}>
+              Publication Type <span style={{ color: "red" }}>*</span>
+            </label>
+            <select
+              className={styles.input}
+              value={formData.type}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, type: e.target.value }))
+              }
+              required
+            >
+              <option value="Article">Article</option>
+              <option value="Research Paper">Research Paper</option>
+              <option value="Case Notes">Case Notes</option>
+              <option value="Legislative Comments">Legislative Comments</option>
+              <option value="Book Reviews">Book Reviews</option>
+            </select>
+          </div>
+
           <div className={styles.guidelines}>
             <h3 className={styles.guidelinesTitle}>Publishing Guidelines</h3>
             <ul className={styles.guidelinesList}>
@@ -512,7 +548,7 @@ export default function UploadArticle() {
 
           <div className={styles.fieldGroup}>
             <label className={styles.label}>
-              Article Title <span style={{ color: "red" }}>*</span>
+              Manuscript Title <span style={{ color: "red" }}>*</span>
             </label>
             <input
               type="text"
@@ -659,6 +695,13 @@ export default function UploadArticle() {
               )}
             </div>
           </div>
+
+          {/* Add this after the Tags fieldGroup */}
+          <CoAuthorSelector
+            selectedCoAuthors={selectedCoAuthors}
+            onCoAuthorsChange={setSelectedCoAuthors}
+            currentUserId={user.id}
+          />
 
           <div className={styles.fieldGroup}>
             <label className={styles.label}>

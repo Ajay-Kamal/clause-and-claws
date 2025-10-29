@@ -1,0 +1,59 @@
+.followBtn {
+  flex: 1;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  text-align: center;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+}
+
+.notFollowing {
+  background: #ffd700;
+  color: #1a1a1a;
+  border: 2px solid #ffd700;
+}
+
+.notFollowing:hover {
+  background: #ffed4e;
+  border-color: #ffed4e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+}
+
+.following {
+  background: white;
+  color: #1a1a1a;
+  border: 1px solid #1a1a1a;
+}
+
+.following:hover {
+  background: #1a1a1a;
+  color: white;
+}
+
+.followBtnDisabled {
+  flex: 1;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  text-align: center;
+  background: #e0e0e0;
+  color: #999;
+  border: 1px solid #e0e0e0;
+  cursor: not-allowed;
+}
+
+/* For use in other contexts (like profile pages) */
+.followBtn.large {
+  padding: 12px 32px;
+  font-size: 1rem;
+}
+
+.followBtn:active:not(:disabled) {
+  transform: translateY(0);
+}

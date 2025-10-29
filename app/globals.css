@@ -1,6 +1,6 @@
 @font-face {
-  font-family: 'Nunito';
-  src: url(/fonts/Nunito-Regular.ttf) format('truetype');
+  font-family: 'Garamond';
+  src: url(/fonts/garamond.ttf) format('truetype');
 }
 
 :root {

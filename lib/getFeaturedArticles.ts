@@ -16,6 +16,7 @@ export async function getFeaturedArticles(): Promise<Article[]> {
         approved,
         abstract,
         author_id,
+        type,
         thumbnail_url,
         created_at,
         profiles!inner(
@@ -27,7 +28,7 @@ export async function getFeaturedArticles(): Promise<Article[]> {
     )
     .eq("published", true)
     .eq("is_featured", true)
-    .limit(6);  
+    .limit(3);  
 
   if (error || !data) {
     console.log("Supabase Error:", error);

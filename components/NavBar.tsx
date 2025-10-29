@@ -16,6 +16,7 @@ export default function NavBar() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileUsername, setProfileUsername] = useState<string | null>(null);
   const [uploadDropdownOpen, setUploadDropdownOpen] = useState(false);
   const [mobileUploadDropdownOpen, setMobileUploadDropdownOpen] =
     useState(false);
@@ -41,8 +42,10 @@ export default function NavBar() {
         .eq("id", user?.id)
         .maybeSingle();
       setIsAdmin(Boolean(profile?.is_admin));
+      setProfileUsername(profile?.username || null);
     })();
   }, []);
+
 
   const isActive = (href: string) =>
     `${styles["nav-link"]} ${pathname === href ? styles.active : ""}`;
@@ -54,14 +57,14 @@ export default function NavBar() {
 
   const navLinks = [
     { href: "/", label: "Home" },
-    { href: "/articles", label: "Articles" },
+    { href: "/articles", label: "Publications" },
+    { href: "/authors", label: "Authors" },
     { href: "/tags", label: "Categories" },
     { href: "/about-us", label: "About Us" },
   ];
 
   const uploadOptions = [
-    { href: "/upload", label: "Article" },
-    { href: "/research-paper", label: "Research Paper" },
+    { href: "/upload", label: "Manuscript" }
   ];
 
   useEffect(() => {
@@ -405,7 +408,7 @@ export default function NavBar() {
                     onMouseLeave={() => setProfileDropdownOpen(false)}
                   >
                     <Link
-                      href="/profile/edit"
+                      href={'/authors/' + (profileUsername ? profileUsername : '')}
                       className={styles["profile-dropdown-item"]}
                       onClick={() => setProfileDropdownOpen(false)}
                     >
@@ -422,7 +425,7 @@ export default function NavBar() {
                           d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                         />
                       </svg>
-                      Edit Profile
+                      My Profile
                     </Link>
 
                     <button

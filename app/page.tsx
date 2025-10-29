@@ -1,13 +1,13 @@
-import { getFeaturedArticles } from "@/lib/getFeaturedArticles";
+// Home Page
+import { getFeaturedArticles } from "../lib/getFeaturedArticles";
 import Link from "next/link";
 import { createSupabaseBrowserClient } from "@/utils/supabase/browser";
 import { redirect } from "next/navigation";
 import ArticleCard from "@/components/ArticleCard";
 import "./globals.css";
 import Welcome from "@/components/Welcome";
-import CategoriesSection from "@/components/CategoriesSection";
 import styles from "../styles/HomePage.module.css";
-import ContributionSection from "@/components/ContributionSection";
+import FeaturedAuthors from "@/components/FeaturedAuthors";
 
 export default async function HomePage() {
   const supabase = createSupabaseBrowserClient();
@@ -56,7 +56,14 @@ export default async function HomePage() {
       <div className={styles.featuredSection}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
-            <h1 className={styles.sectionTitle}>Featured Articles</h1>
+            <div>
+              <h1 className={styles.sectionTitle}>Featured Publications</h1>
+              <p>
+                Peer-reviewed scholarship selected by our editorial board for
+                exceptional research and quality and impact
+              </p>
+            </div>
+            <Link href="/articles">View More</Link>
           </div>
 
           <div className={styles.articlesContainer}>
@@ -94,8 +101,7 @@ export default async function HomePage() {
         </div>
       </div>
 
-      <CategoriesSection />
-      <ContributionSection />
+      <FeaturedAuthors />
     </div>
   );
 }

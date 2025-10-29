@@ -1,12 +1,14 @@
+
 .welcomeContainer {
-  width: min(100%,1200px);
+  width: 100%;
   height: fit-content;
   position: relative;
   margin: 0 auto;
+  background-color: rgb(17, 37, 66);
 }
 
 .welcomeWrapper {
-  max-width: 100%;
+  max-width: min(100%, 1330px);
   height: fit-content;
   display: flex;
   flex-direction: column;
@@ -26,87 +28,160 @@
   position: absolute;
   left: 4%;
   bottom: 8%;
-  max-width: 90vw;
 }
 
 .welcomeText h1 {
-  margin-bottom: 0.8vw;
-  color: #ededed;
-  text-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
-  font-family: Merriweather;
-  font-size: clamp(1.5rem, 4.5vw, 4rem);
-  font-style: normal;
-  font-weight: 900;
-  line-height: 1.2;
-  max-width: 90vw;
-  word-break: break-word;
+  font-size: 3.5rem;
+  color: #ffffff;
+  margin: 0;
+  font-weight: 700;
+  font-family: Arial, Helvetica, sans-serif, serif;
+}
+
+.welcomeText h1:nth-child(2) {
+  color: rgb(255 217 0);
 }
 
 .welcomeText p {
-  color: #ededed;
-  font-family: Merriweather;
-  font-size: clamp(0.875rem, 1.5vw, 1.375rem);
-  font-style: normal;
-  font-weight: 900;
-  line-height: 1.4;
-  width: clamp(250px, 35vw, 410px);
-  max-width: 90vw;
-  word-break: break-word;
+  font-size: 1.2rem;
+  color: #ffffff;
+  margin: 1rem 0 2rem 0;
+  max-width: 600px;
+  line-height: 1.5;
+  font-family: Garamond;
 }
 
 .btn-section {
   display: flex;
-  gap: clamp(0.5rem, 1vw, 1rem);
-  margin-top: clamp(1rem, 1.8vw, 1.5rem);
+  gap: 1rem;
 }
 
 .btn-primary {
-  display: flex;
-  width: clamp(7rem, 12vw, 11.5625rem);
-  height: clamp(2rem, 3.5vw, 3.375rem);
-  padding: 0.375rem 1.125rem;
-  justify-content: center;
-  align-items: center;
-  gap: 0.625rem;
-  flex-shrink: 0;
-  border-radius: 0.5rem;
-  background: #091e39;
-  box-shadow: 1px -2px 14px 0 rgba(0, 0, 0, 0.5);
-  color: #fff;
-  font-family: "Open Sans";
-  font-size: clamp(0.75rem, 1.1vw, 1rem);
-  font-style: normal;
-  font-weight: 700;
-  line-height: normal;
+  background-color: rgb(255, 217, 0);
+  color: black;
+  padding: 0.8rem 1.5rem;
   text-decoration: none;
+  font-weight: 600;
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+  font-family: Arial, Helvetica, sans-serif, serif;
+}
+
+.btn-primary:hover {
+  background-color: #e6c200;
+  color: black;
 }
 
 .btn-secondary {
-  display: flex;
-  width: clamp(7rem, 12vw, 11.5625rem);
-  height: clamp(2rem, 3.5vw, 3.375rem);
-  padding: 0.375rem 1.125rem;
-  justify-content: center;
-  align-items: center;
-  gap: 0.625rem;
-  flex-shrink: 0;
-  border-radius: 0.5rem;
-  background: #fff;
-  box-shadow: 1px -2px 14px 0 rgba(0, 0, 0, 0.5);
-  color: #091e39;
-  font-family: "Open Sans";
-  font-size: clamp(0.75rem, 1.1vw, 1rem);
-  font-style: normal;
-  font-weight: 700;
-  line-height: normal;
+  background-color: transparent;
+  color: #ffffff;
+  padding: 0.8rem 1.5rem;
   text-decoration: none;
+  font-weight: 600;
+  border: 2px solid #ffffff;
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s;
+  font-family: Arial, Helvetica, sans-serif, serif;
 }
 
-.btn-primary:hover,
 .btn-secondary:hover {
-  opacity: 0.9;
-  cursor: pointer;
-  transform: translate(0, -2px);
-  box-shadow: 1px -4px 18px 0 rgba(0, 0, 0, 0.6);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: #ffffff;
+  color: black;
+}
+
+@media (max-width: 768px) {
+  .welcomeText h1 {
+    font-size: 2.5rem;
+  }
+
+  .welcomeText p {
+    font-size: 1rem;
+  }
+
+  .welcomeText {
+    left: 4%;
+    bottom: 6%;
+    max-width: 90vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcomeText h1 {
+    font-size: 2rem;
+  }
+
+  .welcomeText p {
+    font-size: 0.9rem;
+  }
+
+  .welcomeText {
+    left: 3%;
+    bottom: 5%;
+    max-width: 85vw;
+  }
+}
+
+.associationSection {
+  width: 100%;
+  height: fit-content;
+  background-color: rgb(21 33 57);
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 2rem 0;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.associationSectionWrapper {
+  max-width: min(100%, 1200px);
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  position: relative;
+  gap: 2rem;
+}
+
+.associationSection header{
+  color: white;
+  text-align: center;
+  font-family: Garamond;
+}
+
+.associations{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.association1 {
+  color: white;
+  text-align: center;
+  width: 49%;
+  font-size: 0.7rem;
+}
+
+.association1 p{
+  color: #ffd900;
+}
+
+.midLine {
+  width: 1px;
+  height: 80px;
+  background-color: white;
+  margin: 0 2rem;
+}
+
+.association2 {
+  color: white;
+  text-align: center;
+  width: 49%;
+  font-size: 0.7rem;
+}
+
+.association2 p{
+  color: #ffd900;
 }
