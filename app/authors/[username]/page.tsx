@@ -6,11 +6,7 @@ import FollowerCount from "@/components/FollowerCount";
 import ArticleCard from "@/components/ArticleCard";
 import { Article } from "@/types";
 
-export default async function AuthorProfile({
-  params,
-}: {
-  params: { username: string | Promise<string> };
-}) {
+export default async function AuthorProfile( params: any) {
   const awaitedParams = await params;
   const username =
     typeof awaitedParams.username === "string"
