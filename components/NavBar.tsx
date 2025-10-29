@@ -64,7 +64,8 @@ export default function NavBar() {
   ];
 
   const uploadOptions = [
-    { href: "/upload", label: "Manuscript" }
+    { href: "/upload", label: "Manuscript" },
+    { href: "/drafts", label: "Edit Drafts" },
   ];
 
   useEffect(() => {

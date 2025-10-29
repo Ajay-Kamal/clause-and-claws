@@ -1,8 +1,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { createBrowserClient } from "@supabase/ssr";
-import styles from "../../styles/UploadArticle.module.css";
+import styles from "../../../styles/UploadArticle.module.css";
 import GoogleModal from "@/components/GoogleModal";
 import CoAuthorSelector from "@/components/CoAuthorSelector";
 
@@ -93,9 +93,12 @@ const LAW_CATEGORIES = {
   ],
 };
 
-export default function UploadArticle() {
+export default function EditDraft() {
   const router = useRouter();
+  const params = useParams();
+  const slug = params?.slug as string;
   const dropdownRef = useRef<HTMLDivElement>(null);
+
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -103,6 +106,9 @@ export default function UploadArticle() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [articleId, setArticleId] = useState<string | null>(null);
+  const [existingFileUrl, setExistingFileUrl] = useState<string | null>(null);
+  const [existingThumbnailUrl, setExistingThumbnailUrl] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -148,7 +154,7 @@ export default function UploadArticle() {
   }, []);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    const loadDraft = async () => {
       try {
         const {
           data: { user },
@@ -159,18 +165,59 @@ export default function UploadArticle() {
           return;
         }
         setUser(user);
+
+        // Fetch draft article
+        const { data: article, error } = await supabase
+          .from("articles")
+          .select("*, article_coauthors(coauthor_id, profiles(id, username, full_name, avatar_url))")
+          .eq("slug", slug)
+          .eq("author_id", user.id)
+          .eq("draft", true)
+          .single();
+
+        if (error || !article) {
+          alert("Draft not found or you don't have permission to edit it.");
+          router.push("/drafts");
+          return;
+        }
+
+        // Set article ID and existing URLs
+        setArticleId(article.id);
+        setExistingFileUrl(article.file_url);
+        setExistingThumbnailUrl(article.thumbnail_url);
+
+        // Populate form data
+        setFormData({
+          title: article.title || "",
+          abstract: article.abstract || "",
+          tags: article.tags || [],
+          file: null,
+          thumbnail: null,
+          type: article.type || "Article",
+        });
+
+        // Populate co-authors
+        if (article.article_coauthors) {
+          const coauthors = article.article_coauthors
+            .map((ac: any) => ac.profiles)
+            .filter(Boolean);
+          setSelectedCoAuthors(coauthors);
+        }
       } catch (error) {
-        console.error("Auth error:", error);
-        setShowGoogleModal(true);
+        console.error("Error loading draft:", error);
+        alert("Failed to load draft.");
+        router.push("/drafts");
       } finally {
         setLoading(false);
       }
     };
 
-    checkAuth();
-  }, [router]);
+    if (slug) {
+      loadDraft();
+    }
+  }, [slug, router]);
 
-  const generateUniqueSlug = async (baseSlug: string): Promise<string> => {
+  const generateUniqueSlug = async (baseSlug: string, currentArticleId: string): Promise<string> => {
     let uniqueSlug = baseSlug;
     let counter = 1;
 
@@ -179,6 +226,7 @@ export default function UploadArticle() {
         .from("articles")
         .select("id")
         .eq("slug", uniqueSlug)
+        .neq("id", currentArticleId)
         .maybeSingle();
 
       if (!data) return uniqueSlug;
@@ -291,26 +339,31 @@ export default function UploadArticle() {
     if (file) handleThumbnailSelect(file);
   };
 
-  // Save Draft Function
-  const handleSaveDraft = async () => {
+  // Update Draft Function
+  const handleUpdateDraft = async () => {
     setErrors({});
     setSavingDraft(true);
 
     try {
-      // Basic validation - only title required for draft
       if (!formData.title.trim()) {
         setErrors({ title: "Title is required to save draft" });
         setSavingDraft(false);
         return;
       }
 
+      if (!articleId) {
+        setErrors({ _form: "Article ID not found" });
+        setSavingDraft(false);
+        return;
+      }
+
       const baseSlug = generateSlug(formData.title);
-      const uniqueSlug = await generateUniqueSlug(baseSlug);
+      const uniqueSlug = await generateUniqueSlug(baseSlug, articleId);
 
-      let fileUrl = null;
-      let thumbnailPublicUrl = DEFAULT_THUMBNAIL;
+      let fileUrl = existingFileUrl;
+      let thumbnailPublicUrl = existingThumbnailUrl || DEFAULT_THUMBNAIL;
 
-      // Upload file if present
+      // Upload new file if selected
       if (formData.file) {
         const fileExt = formData.file.name.split(".").pop();
         const fileName = `${uniqueSlug}-${Date.now()}.${fileExt}`;
@@ -333,9 +386,17 @@ export default function UploadArticle() {
           .from("articles")
           .getPublicUrl(filePath);
         fileUrl = urlData.publicUrl;
+
+        // Delete old file if exists
+        if (existingFileUrl) {
+          const oldFileName = existingFileUrl.split("/").pop();
+          if (oldFileName) {
+            await supabase.storage.from("articles").remove([`articles/${oldFileName}`]);
+          }
+        }
       }
 
-      // Upload thumbnail if present
+      // Upload new thumbnail if selected
       if (formData.thumbnail) {
         const thumbErr = validateThumbnail(formData.thumbnail);
         if (!thumbErr) {
@@ -355,60 +416,67 @@ export default function UploadArticle() {
               .from("thumbnails")
               .getPublicUrl(thumbPath);
             thumbnailPublicUrl = thumbUrlData.publicUrl;
+
+            // Delete old thumbnail if exists and not default
+            if (existingThumbnailUrl && existingThumbnailUrl !== DEFAULT_THUMBNAIL) {
+              const oldThumbName = existingThumbnailUrl.split("/").pop();
+              if (oldThumbName) {
+                await supabase.storage
+                  .from("thumbnails")
+                  .remove([`${user.id}/${oldThumbName}`]);
+              }
+            }
           }
         }
       }
 
-      // Insert draft article
-      const { data: articleData, error: dbError } = await supabase
+      // Update draft article
+      const { error: dbError } = await supabase
         .from("articles")
-        .insert({
-          author_id: user.id,
+        .update({
           slug: uniqueSlug,
           title: formData.title.trim(),
           abstract: formData.abstract.trim() || null,
           tags: formData.tags.length > 0 ? formData.tags : null,
           filename: formData.file?.name || null,
           file_url: fileUrl,
-          watermarked_pdf_url: null, // No watermark for drafts
           thumbnail_url: thumbnailPublicUrl,
           type: formData.type,
-          views: 0,
-          likes: 0,
-          is_featured: false,
-          published: false,
-          draft: true, // THIS IS THE KEY FIELD
+          draft: true,
         })
-        .select()
-        .single();
+        .eq("id", articleId);
 
       if (dbError) {
-        setErrors({ _form: "Failed to save draft: " + dbError.message });
+        setErrors({ _form: "Failed to update draft: " + dbError.message });
         setSavingDraft(false);
         return;
       }
 
-      // Insert co-authors if any selected
-      if (selectedCoAuthors.length > 0 && articleData) {
+      // Update co-authors
+      // First delete existing co-authors
+      await supabase.from("article_coauthors").delete().eq("article_id", articleId);
+
+      // Then insert new ones
+      if (selectedCoAuthors.length > 0) {
         const coauthorInserts = selectedCoAuthors.map((coauthor) => ({
-          article_id: articleData.id,
+          article_id: articleId,
           coauthor_id: coauthor.id,
         }));
 
         await supabase.from("article_coauthors").insert(coauthorInserts);
       }
 
-      alert("Draft saved successfully! You can continue editing from My Drafts page.");
+      alert("Draft updated successfully!");
       router.push("/drafts");
     } catch (error) {
       console.error(error);
-      setErrors({ _form: "An unexpected error occurred while saving draft" });
+      setErrors({ _form: "An unexpected error occurred while updating draft" });
     } finally {
       setSavingDraft(false);
     }
   };
 
-  // Submit for Review Function (modified from original handleSubmit)
+  // Submit for Review Function
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -426,8 +494,14 @@ export default function UploadArticle() {
         setUploading(false);
         return;
       }
-      if (!formData.file) {
+      if (!formData.file && !existingFileUrl) {
         setErrors({ file: "Please select a file to upload" });
+        setUploading(false);
+        return;
+      }
+
+      if (!articleId) {
+        setErrors({ _form: "Article ID not found" });
         setUploading(false);
         return;
       }
@@ -435,39 +509,54 @@ export default function UploadArticle() {
       setUploadProgress(10);
 
       const baseSlug = generateSlug(formData.title);
-      const uniqueSlug = await generateUniqueSlug(baseSlug);
+      const uniqueSlug = await generateUniqueSlug(baseSlug, articleId);
 
       setUploadProgress(20);
 
-      const fileExt = formData.file.name.split(".").pop();
-      const fileName = `${uniqueSlug}-${Date.now()}.${fileExt}`;
-      const filePath = `articles/${fileName}`;
+      let fileUrl = existingFileUrl;
 
-      const { error: uploadError } = await supabase.storage
-        .from("articles")
-        .upload(filePath, formData.file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
+      // Upload new file if selected
+      if (formData.file) {
+        const fileExt = formData.file.name.split(".").pop();
+        const fileName = `${uniqueSlug}-${Date.now()}.${fileExt}`;
+        const filePath = `articles/${fileName}`;
 
-      if (uploadError) {
-        setErrors({ file: "Failed to upload file: " + uploadError.message });
-        setUploading(false);
-        return;
+        const { error: uploadError } = await supabase.storage
+          .from("articles")
+          .upload(filePath, formData.file, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) {
+          setErrors({ file: "Failed to upload file: " + uploadError.message });
+          setUploading(false);
+          return;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from("articles")
+          .getPublicUrl(filePath);
+        fileUrl = urlData.publicUrl;
+
+        // Delete old file
+        if (existingFileUrl) {
+          const oldFileName = existingFileUrl.split("/").pop();
+          if (oldFileName) {
+            await supabase.storage.from("articles").remove([`articles/${oldFileName}`]);
+          }
+        }
       }
 
       setUploadProgress(50);
-      const { data: urlData } = supabase.storage
-        .from("articles")
-        .getPublicUrl(filePath);
 
-      let thumbnailPublicUrl = DEFAULT_THUMBNAIL;
+      let thumbnailPublicUrl = existingThumbnailUrl || DEFAULT_THUMBNAIL;
 
+      // Upload new thumbnail if selected
       if (formData.thumbnail) {
         const thumbErr = validateThumbnail(formData.thumbnail);
         if (thumbErr) {
           setErrors((prev) => ({ ...prev, thumbnail: thumbErr }));
-          await supabase.storage.from("articles").remove([filePath]);
           setUploading(false);
           return;
         }
@@ -484,7 +573,6 @@ export default function UploadArticle() {
           });
 
         if (thumbError) {
-          await supabase.storage.from("articles").remove([filePath]);
           setErrors({
             thumbnail: "Failed to upload thumbnail: " + thumbError.message,
           });
@@ -496,16 +584,27 @@ export default function UploadArticle() {
           .from("thumbnails")
           .getPublicUrl(thumbPath);
         thumbnailPublicUrl = thumbUrlData.publicUrl;
+
+        // Delete old thumbnail
+        if (existingThumbnailUrl && existingThumbnailUrl !== DEFAULT_THUMBNAIL) {
+          const oldThumbName = existingThumbnailUrl.split("/").pop();
+          if (oldThumbName) {
+            await supabase.storage
+              .from("thumbnails")
+              .remove([`${user.id}/${oldThumbName}`]);
+          }
+        }
       }
 
       setUploadProgress(60);
 
+      // Add watermark
       const watermarkRes = await fetch("/api/watermark", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           articleId: uniqueSlug,
-          pdfUrl: urlData.publicUrl,
+          pdfUrl: fileUrl,
           logoUrl: `${window.location.origin}/images/final-logo.png`,
         }),
       });
@@ -514,7 +613,6 @@ export default function UploadArticle() {
 
       if (!watermarkData.success) {
         setErrors({ _form: "Failed to add watermark: " + watermarkData.error });
-        await supabase.storage.from("articles").remove([filePath]);
         setUploading(false);
         return;
       }
@@ -522,50 +620,39 @@ export default function UploadArticle() {
       const watermarkedPdfUrl = watermarkData.watermarkedPdfUrl;
       setUploadProgress(75);
 
-      // Insert article with draft = false (submitted for review)
-      const { data: articleData, error: dbError } = await supabase
+      // Update article to submitted status
+      const { error: dbError } = await supabase
         .from("articles")
-        .insert({
-          author_id: user.id,
+        .update({
           slug: uniqueSlug,
           title: formData.title.trim(),
           abstract: formData.abstract.trim(),
           tags: formData.tags.length > 0 ? formData.tags : null,
-          filename: formData.file.name,
-          file_url: urlData.publicUrl,
+          filename: formData.file?.name || existingFileUrl?.split("/").pop() || null,
+          file_url: fileUrl,
           watermarked_pdf_url: watermarkedPdfUrl,
           thumbnail_url: thumbnailPublicUrl,
           type: formData.type,
-          views: 0,
-          likes: 0,
-          is_featured: false,
-          published: false,
-          draft: false, // NOT A DRAFT - submitted for review
+          draft: false,
         })
-        .select()
-        .single();
+        .eq("id", articleId);
 
       if (dbError) {
-        await supabase.storage.from("articles").remove([filePath]);
-        setErrors({ _form: "Failed to save article: " + dbError.message });
+        setErrors({ _form: "Failed to submit article: " + dbError.message });
         setUploading(false);
         return;
       }
 
-      // Insert co-authors if any selected
-      if (selectedCoAuthors.length > 0 && articleData) {
+      // Update co-authors
+      await supabase.from("article_coauthors").delete().eq("article_id", articleId);
+
+      if (selectedCoAuthors.length > 0) {
         const coauthorInserts = selectedCoAuthors.map((coauthor) => ({
-          article_id: articleData.id,
+          article_id: articleId,
           coauthor_id: coauthor.id,
         }));
 
-        const { error: coauthorError } = await supabase
-          .from("article_coauthors")
-          .insert(coauthorInserts);
-
-        if (coauthorError) {
-          console.error("Error adding co-authors:", coauthorError);
-        }
+        await supabase.from("article_coauthors").insert(coauthorInserts);
       }
 
       setUploadProgress(100);
@@ -595,12 +682,12 @@ export default function UploadArticle() {
     }
   };
 
-  if (loading) return <div className={styles.loading}>Loading...</div>;
+  if (loading) return <div className={styles.loading}>Loading draft...</div>;
 
   return (
     <>
       <div className={styles.container}>
-        <h1 className={styles.title}>Upload Manuscript</h1>
+        <h1 className={styles.title}>Edit Draft</h1>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.fieldGroup}>
@@ -684,7 +771,7 @@ export default function UploadArticle() {
             <div className={styles.charCounter}>
               <span>{formData.title.length}/200 characters</span>
               {generatedSlug && (
-                <span className={styles.slugText}>Slug: {generatedSlug}</span>
+                <span className={styles.slugText}>New Slug: {generatedSlug}</span>
               )}
             </div>
           </div>
@@ -816,12 +903,12 @@ export default function UploadArticle() {
           <CoAuthorSelector
             selectedCoAuthors={selectedCoAuthors}
             onCoAuthorsChange={setSelectedCoAuthors}
-            currentUserId={user.id}
+            currentUserId={user?.id}
           />
 
           <div className={styles.fieldGroup}>
             <label className={styles.label}>
-              Manuscript File <span style={{ color: "red" }}>*</span>
+              Manuscript File {existingFileUrl && <span style={{ color: "green" }}>(File already uploaded)</span>}
             </label>
             <div
               className={`${styles.dropZone} ${
@@ -866,6 +953,40 @@ export default function UploadArticle() {
                   >
                     Remove file
                   </button>
+                </div>
+              ) : existingFileUrl ? (
+                <div className={styles.fileSelected}>
+                  <div className={styles.fileIcon}>
+                    <svg
+                      className={styles.successIcon}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <p className={styles.fileName}>Current file uploaded</p>
+                  <p className={styles.fileSize} style={{ color: "#5A6B7D" }}>
+                    Upload a new file to replace it
+                  </p>
+                  <label className={styles.browseLink}>
+                    Choose new file
+                    <input
+                      type="file"
+                      className={styles.hiddenInput}
+                      accept=".pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileSelect(file);
+                      }}
+                    />
+                  </label>
                 </div>
               ) : (
                 <div className={styles.uploadInstructions}>
@@ -938,6 +1059,27 @@ export default function UploadArticle() {
                     Remove thumbnail
                   </button>
                 </div>
+              ) : existingThumbnailUrl ? (
+                <div className={styles.thumbnailPreview}>
+                  <img
+                    src={existingThumbnailUrl}
+                    alt="Current thumbnail"
+                    className={styles.thumbnailImage}
+                  />
+                  <p>Current thumbnail</p>
+                  <label className={styles.browseLink}>
+                    Upload new thumbnail
+                    <input
+                      type="file"
+                      className={styles.hiddenInput}
+                      accept="image/webp"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleThumbnailSelect(file);
+                      }}
+                    />
+                  </label>
+                </div>
               ) : (
                 <div>
                   <p>
@@ -959,8 +1101,7 @@ export default function UploadArticle() {
                     Supported: WebP only | Max size: 100 KB
                   </p>
                   <p className={styles.supportedFormats}>
-                    If you don't upload a thumbnail, a default thumbnail will be
-                    used.
+                    If you don't upload a thumbnail, the default will be used.
                   </p>
                 </div>
               )}
@@ -973,7 +1114,7 @@ export default function UploadArticle() {
           {(uploading || savingDraft) && (
             <div className={styles.progressContainer}>
               <div className={styles.progressHeader}>
-                <span>{savingDraft ? "Saving Draft..." : "Uploading..."}</span>
+                <span>{savingDraft ? "Updating Draft..." : "Submitting..."}</span>
                 {uploading && <span>{uploadProgress}%</span>}
               </div>
               {uploading && (
@@ -994,11 +1135,11 @@ export default function UploadArticle() {
           <div className={styles.buttonContainer}>
             <button
               type="button"
-              onClick={handleSaveDraft}
+              onClick={handleUpdateDraft}
               className={styles.draftButton}
               disabled={uploading || savingDraft || !formData.title.trim()}
             >
-              {savingDraft ? "Saving..." : "Save Draft"}
+              {savingDraft ? "Updating..." : "Update Draft"}
             </button>
 
             <button
@@ -1008,7 +1149,7 @@ export default function UploadArticle() {
                 savingDraft ||
                 !formData.title.trim() ||
                 !formData.abstract.trim() ||
-                !formData.file
+                (!formData.file && !existingFileUrl)
               }
               className={styles.submitButton}
             >

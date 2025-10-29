@@ -683,3 +683,75 @@
     justify-content: center;
   }
 }
+
+/* Add these styles to your existing UploadArticle.module.css */
+
+.buttonContainer {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.draftButton {
+  flex: 1;
+  background: #F0E6D2;
+  color: #2C3E50;
+  border: 2px solid #D4C4A8;
+  padding: 0.875rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: Arial, sans-serif;
+}
+
+.draftButton:hover:not(:disabled) {
+  background: #E8D8B8;
+  border-color: #C4B498;
+  transform: translateY(-1px);
+}
+
+.draftButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.submitButton {
+  flex: 1;
+  background: #FFD700;
+  color: #2C3E50;
+  border: none;
+  padding: 0.875rem 2rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: Arial, sans-serif;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: #F0C800;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+}
+
+.submitButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .buttonContainer {
+    flex-direction: column;
+  }
+  
+  .draftButton,
+  .submitButton {
+    width: 100%;
+  }
+}
