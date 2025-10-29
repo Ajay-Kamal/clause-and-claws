@@ -1,4 +1,4 @@
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import styles from "../../../styles/AuthorProfile.module.css";
 import FollowButton from "@/components/FollowButton";
@@ -6,26 +6,25 @@ import FollowerCount from "@/components/FollowerCount";
 import ArticleCard from "@/components/ArticleCard";
 import { Article } from "@/types";
 
+interface AuthorProfileProps {
+  params: Promise<{
+    username: string;
+  }>;
+}
+
 export default async function AuthorProfile({
   params,
-}: {
-  params: { username: string | Promise<any> };
-}) {
-  const awaitedParams = await params;
-  const username =
-    typeof awaitedParams.username === "string"
-      ? awaitedParams.username
-      : await awaitedParams.username;
+}: AuthorProfileProps) {
+  const { username } = await params;
 
-  const cookieStore = await cookies();
+  const cookieStore = await cookies(); 
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
+        get: (name: string) => cookieStore.get(name)?.value,
       },
     }
   );
