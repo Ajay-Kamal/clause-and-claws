@@ -149,6 +149,7 @@ export default async function AuthorProfile({
                   key={article.id}
                   article={article}
                   showAuthor={false}
+                  showReadButton={false}
                 />
               ))}
             </div>

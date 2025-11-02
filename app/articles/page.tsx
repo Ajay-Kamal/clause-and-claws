@@ -1,172 +1,552 @@
-// app/articles/page.tsx
-import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
-import ArticleCard from "@/components/ArticleCard";
-import Pagination from "@/components/Pagination";
+"use client";
 
-// Optional: Add metadata for SEO
-export const metadata = {
-  title: "All Articles",
-  description: "Browse all published articles",
-};
+import React, { useState, useEffect, useMemo } from "react";
+import { createBrowserClient } from "@supabase/ssr";
+import styles from "@/styles/ArticlesPage.module.css";
 
-const ARTICLES_PER_PAGE = 12;
+const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
-export default async function ArticlesPage({ searchParams }: any) {
-  const cookieStore = await cookies();
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
+const ResearchPapersPage: React.FC = () => {
+  const [featuredResearchPapers, setFeaturedResearchPapers] = useState<any[]>([]);
+  const [featuredArticles, setFeaturedArticles] = useState<any[]>([]);
+  const [featuredLegislative, setFeaturedLegislative] = useState<any[]>([]);
+  const [allResearchPapers, setAllResearchPapers] = useState<any[]>([]);
+  const [allArticles, setAllArticles] = useState<any[]>([]);
+  const [allLegislative, setAllLegislative] = useState<any[]>([]);
+  const [allCaseNotes, setAllCaseNotes] = useState<any[]>([]);
+  const [bookReviews, setBookReviews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    fetchAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchAllData = async () => {
+    try {
+      const { data: featuredRP } = await supabase
+        .from("articles")
+        .select("*, profiles(full_name)")
+        .eq("type", "Research Paper")
+        .eq("is_featured", true)
+        .eq("published", true)
+        .eq("draft", false)
+        .order("created_at", { ascending: false })
+        .limit(4);
+
+      const { data: featuredArt } = await supabase
+        .from("articles")
+        .select("*, profiles(full_name)")
+        .eq("type", "Article")
+        .eq("is_featured", true)
+        .eq("published", true)
+        .eq("draft", false)
+        .order("created_at", { ascending: false })
+        .limit(4);
+
+      const { data: featuredLeg } = await supabase
+        .from("articles")
+        .select("*, profiles(full_name)")
+        .eq("type", "Legislative Comments")
+        .eq("is_featured", true)
+        .eq("published", true)
+        .eq("draft", false)
+        .order("created_at", { ascending: false })
+        .limit(4);
+
+      const { data: allRP } = await supabase
+        .from("articles")
+        .select("*, profiles(full_name)")
+        .eq("type", "Research Paper")
+        .eq("published", true)
+        .eq("draft", false)
+        .order("created_at", { ascending: false });
+
+      const { data: allArt } = await supabase
+        .from("articles")
+        .select("*, profiles(full_name)")
+        .eq("type", "Article")
+        .eq("published", true)
+        .eq("draft", false)
+        .order("created_at", { ascending: false });
+
+      const { data: allLeg } = await supabase
+        .from("articles")
+        .select("*, profiles(full_name)")
+        .eq("type", "Legislative Comments")
+        .eq("published", true)
+        .eq("draft", false)
+        .order("created_at", { ascending: false });
+
+      const { data: allCN } = await supabase
+        .from("articles")
+        .select("*, profiles(full_name)")
+        .eq("type", "Case Notes")
+        .eq("published", true)
+        .eq("draft", false)
+        .order("created_at", { ascending: false });
+
+      const { data: reviews } = await supabase
+        .from("articles")
+        .select("*, profiles(full_name)")
+        .eq("type", "Book Reviews")
+        .eq("published", true)
+        .eq("draft", false)
+        .order("created_at", { ascending: false });
+
+      setFeaturedResearchPapers(featuredRP || []);
+      setFeaturedArticles(featuredArt || []);
+      setFeaturedLegislative(featuredLeg || []);
+      setAllResearchPapers(allRP || []);
+      setAllArticles(allArt || []);
+      setAllLegislative(allLeg || []);
+      setAllCaseNotes(allCN || []);
+      setBookReviews(reviews || []);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
-  );
+  };
 
-  // Get current page from URL params, default to 1
-  const currentPage = Number(searchParams.page) || 1;
+  // Filter articles based on search query
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return {
+        researchPapers: allResearchPapers.slice(0, 5),
+        articles: allArticles.slice(0, 5),
+        legislative: allLegislative.slice(0, 5),
+        caseNotes: allCaseNotes.slice(0, 5),
+        bookReviews: bookReviews,
+      };
+    }
 
-  // Calculate offset for pagination
-  const from = (currentPage - 1) * ARTICLES_PER_PAGE;
-  const to = from + ARTICLES_PER_PAGE - 1;
+    const query = searchQuery.toLowerCase().trim();
+    const filterArticles = (articles: any[]) =>
+      articles.filter((article) => {
+        const title = (article.title || "").toLowerCase();
+        const abstract = (article.abstract || "").toLowerCase();
+        const authorName = (article.profiles?.full_name || "").toLowerCase();
+        return (
+          title.includes(query) ||
+          abstract.includes(query) ||
+          authorName.includes(query)
+        );
+      });
 
-  // Fetch articles with pagination
-  const {
-    data: articles,
-    error,
-    count,
-  } = await supabase
-    .from("articles")
-    .select(
-      `*,
-      profiles (
-        full_name,
-        username,
-        avatar_url
-      )
-    `,
-      { count: "exact" }
-    )
-    .eq("published", true)
-    .eq("approved", true)
-    .eq("payment_done", true)
-    .order("created_at", { ascending: false })
-    .range(from, to);
+    return {
+      researchPapers: filterArticles(allResearchPapers).slice(0, 5),
+      articles: filterArticles(allArticles).slice(0, 5),
+      legislative: filterArticles(allLegislative).slice(0, 5),
+      caseNotes: filterArticles(allCaseNotes).slice(0, 5),
+      bookReviews: filterArticles(bookReviews),
+    };
+  }, [
+    searchQuery,
+    allResearchPapers,
+    allArticles,
+    allLegislative,
+    allCaseNotes,
+    bookReviews,
+  ]);
 
-  if (error) {
-    console.error("Error fetching articles:", error);
-    notFound();
-  }
+  // Calculate total results
+  const totalResults = useMemo(() => {
+    if (!searchQuery.trim()) return 0;
+    return (
+      filteredData.researchPapers.length +
+      filteredData.articles.length +
+      filteredData.legislative.length +
+      filteredData.caseNotes.length +
+      filteredData.bookReviews.length
+    );
+  }, [filteredData, searchQuery]);
 
-  // Calculate total pages
-  const totalPages = count ? Math.ceil(count / ARTICLES_PER_PAGE) : 0;
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
 
-  // If page number is invalid, redirect to 404
-  if (currentPage < 1 || (totalPages > 0 && currentPage > totalPages)) {
-    notFound();
-  }
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+  };
 
-  return (
-    <>
-      <style>{`
-      .articles-page {
-        width: 100%;
-        min-height: 100vh;
-        padding: 2rem 1rem;
-        background : rgb(246 246 246);
-      }
+  const formatDate = (dateString?: string | null) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
 
-      .articles-container {
-        max-width: 1200px;
-        margin: 0 auto;
-      }
+  const TopLatestSection: React.FC = () => {
+    const latestRP = filteredData.researchPapers.slice(0, 4);
+    const latestArticle = filteredData.articles[0];
+    const latestLC = filteredData.legislative.slice(0, 4);
 
-      .articles-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 2rem;
-        text-align: center;
-      }
+    // Don't show section if searching and no results
+    if (searchQuery && latestRP.length === 0 && !latestArticle && latestLC.length === 0) {
+      return null;
+    }
 
-      .articles-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 2rem;
-        margin-bottom: 3rem;
-      }
+    return (
+      <section className={styles.topLatestSection}>
+        <div className={styles.topLatestGrid}>
+          {/* Research Papers Column */}
+          <div className={styles.topLatestColumn}>
+            <h2 className={styles.topLatestTitle}>Research papers</h2>
+            <div className={styles.topLatestList}>
+              {latestRP.length > 0 ? (
+                latestRP.map((article) => (
+                  <a
+                    key={article.id}
+                    href={`/articles/${article.slug}`}
+                    className={styles.topLatestItem}
+                  >
+                    <h3 className={styles.topLatestItemTitle}>{article.title}</h3>
+                    <p className={styles.topLatestItemAuthor}>
+                      {article.profiles?.full_name || "Anonymous"}
+                    </p>
+                  </a>
+                ))
+              ) : (
+                <p className={styles.noResults}>No research papers found</p>
+              )}
+            </div>
+          </div>
 
-      .no-articles {
-        text-align: center;
-        padding: 4rem 2rem;
-      }
+          {/* Featured Article Center */}
+          <div className={styles.topLatestCenter}>
+            <h2 className={styles.topLatestTitle}>Articles</h2>
+            {latestArticle ? (
+              <a
+                href={`/articles/${latestArticle.slug}`}
+                className={styles.topLatestFeatured}
+              >
+                <img
+                  src={
+                    latestArticle.thumbnail_url ||
+                    "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400"
+                  }
+                  alt={latestArticle.title}
+                  className={styles.topLatestFeaturedImage}
+                />
+                <h3 className={styles.topLatestFeaturedTitle}>
+                  {latestArticle.title}
+                </h3>
+                <p className={styles.topLatestFeaturedAuthor}>
+                  {latestArticle.profiles?.full_name || "Anonymous"}
+                </p>
+              </a>
+            ) : (
+              <p className={styles.noResults}>No articles found</p>
+            )}
+          </div>
 
-      .no-articles p {
-        font-size: 1.125rem;
-        color: #6b7280;
-      }
+          {/* Legislative Comments Column */}
+          <div className={styles.topLatestColumn}>
+            <h2 className={styles.topLatestTitle}>Legislative comments</h2>
+            <div className={styles.topLatestList}>
+              {latestLC.length > 0 ? (
+                latestLC.map((article) => (
+                  <a
+                    key={article.id}
+                    href={`/articles/${article.slug}`}
+                    className={styles.topLatestItem}
+                  >
+                    <h3 className={styles.topLatestItemTitle}>{article.title}</h3>
+                    <p className={styles.topLatestItemAuthor}>
+                      {article.profiles?.full_name || "Anonymous"}
+                    </p>
+                  </a>
+                ))
+              ) : (
+                <p className={styles.noResults}>No legislative comments found</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
 
-      @media (max-width: 768px) {
-        .articles-page {
-          padding: 1.5rem 1rem;
-        }
+  const FeaturedSection: React.FC<{
+    title: string;
+    articles: any[];
+    buttonText?: string;
+    moreLink?: string;
+    backgroundColor?: string;
+  }> = ({ title, articles, buttonText = "More...", moreLink = "#", backgroundColor }) => {
+    if (!articles || articles.length === 0) return null;
 
-        .articles-title {
-          font-size: 2rem;
-          margin-bottom: 1.5rem;
-        }
+    const mainArticle = articles[0];
+    const sideArticles = articles.slice(1, 4);
 
-        .articles-grid {
-          grid-template-columns: 1fr;
-          gap: 1.5rem;
-          margin-bottom: 2rem;
-          justify-items: center;
-        }
-      }
+    return (
+      <section className={styles.featuredSection} style={backgroundColor ? { backgroundColor } : undefined}>
+        <div className={styles.headerRow}>
+          <h2 className={styles.sectionTitle}>{title}</h2>
+          <a href={moreLink} className={styles.moreBtn}>{buttonText}</a>
+        </div>
 
-      @media (max-width: 480px) {
-        .articles-title {
-          font-size: 1.75rem;
-        }
-
-        .articles-grid {
-          gap: 1rem;
-          grid-template-columns: 1fr;
-          justify-items: center;
-        }
-      }
-      `}</style>
-      <div className="articles-page">
-        <div className="articles-container">
-          <h1 className="articles-title">All Articles</h1>
-
-          {articles && articles.length > 0 ? (
-            <>
-              <div className="articles-grid">
-                {articles.map((article) => (
-                  <ArticleCard key={article.id} article={article} />
-                ))}
+        <div className={styles.featuredGrid}>
+          <a href={`/articles/${mainArticle.slug}`} className={styles.mainCard}>
+            <img
+              src={
+                mainArticle.thumbnail_url ||
+                "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400"
+              }
+              alt={mainArticle.title}
+              className={styles.mainImage}
+            />
+            <div className={styles.mainContent}>
+              <div>
+                <h3 className={styles.mainTitle}>{mainArticle.title}</h3>
+                <p className={styles.mainAbstract}>
+                  {mainArticle.abstract?.substring(0, 180)}...
+                </p>
               </div>
 
-              {totalPages > 1 && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  basePath="/articles"
-                />
-              )}
-            </>
-          ) : (
-            <div className="no-articles">
-              <p>No articles found.</p>
+              <div className={styles.mainFooter}>
+                <div className={styles.mainMeta}>
+                  <span className={styles.authorName}>
+                    {mainArticle.profiles?.full_name || "Anonymous"}
+                  </span>
+                  <span className={styles.dateText}>
+                    {formatDate(mainArticle.created_at)}
+                  </span>
+                </div>
+                <div className={styles.statsBar}>
+                  <span className={styles.statItem}>
+                    Reads: <strong>{mainArticle.views || 94}</strong>
+                  </span>
+                  <span className={styles.statItem}>
+                    Likes: <strong>{mainArticle.likes || 94}</strong>
+                  </span>
+                  <span className={styles.statItem}>
+                    Impact: <strong>94</strong>
+                  </span>
+                </div>
+              </div>
             </div>
+          </a>
+
+          <div className={styles.sideCards}>
+            {sideArticles.map((article) => (
+              <a
+                key={article.id}
+                href={`/articles/${article.slug}`}
+                className={styles.sideCard}
+              >
+                <img
+                  src={
+                    article.thumbnail_url ||
+                    "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=200"
+                  }
+                  alt={article.title}
+                  className={styles.sideImage}
+                />
+                <div className={styles.sideContent}>
+                  <h4 className={styles.sideTitle}>{article.title}</h4>
+                  <div className={styles.sideMeta}>
+                    <span className={styles.sideAuthor}>
+                      {article.profiles?.full_name || "Anonymous"}
+                    </span>
+                    <span className={styles.sideDate}>
+                      {formatDate(article.created_at)}
+                    </span>
+                  </div>
+                  <div className={styles.sideStats}>
+                    <span>
+                      Reads: <strong>{article.views || 94}</strong>
+                    </span>
+                    <span>
+                      Likes: <strong>{article.likes || 94}</strong>
+                    </span>
+                    <span>
+                      Impact: <strong>94</strong>
+                    </span>
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  const CategoryGrid: React.FC<{ 
+    title: string; 
+    articles: any[];
+    moreLink?: string;
+  }> = ({
+    title,
+    articles,
+    moreLink = "#",
+  }) => {
+    if (!articles || articles.length === 0) return null;
+    return (
+      <div className={styles.categoryCol}>
+        <h3 className={styles.categoryTitle}>{title}</h3>
+        <div className={styles.categoryItems}>
+          {articles.map((article) => (
+            <a
+              key={article.id}
+              href={`/articles/${article.slug}`}
+              className={styles.categoryLink}
+            >
+              <h4 className={styles.categoryItemTitle}>{article.title}</h4>
+            </a>
+          ))}
+          {articles.length > 0 && (
+            <a href={moreLink} className={styles.moreTextLink}>
+              <button className={styles.moreText}>More...</button>
+            </a>
           )}
         </div>
       </div>
-    </>
+    );
+  };
+
+  if (loading) {
+    return (
+      <div className={styles.loadingContainer}>
+        <div className={styles.loadingText}>Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.authorsHeader}>
+        <h1 className={styles.authorsTitle}>Explore Publications</h1>
+        <p className={styles.authorsSubtitle}>
+          Browse our comprehensive collection of peer-reviewed legal scholarship
+        </p>
+        <div className={styles.searchSection}>
+          <form onSubmit={handleSearch} className={styles.searchBar}>
+            <input
+              type="text"
+              placeholder="Search Article, Research paper, Book Reviews..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+            <button type="submit" aria-label="Search">
+              <img src="/images/search-icon.svg" alt="Search" />
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div className={styles.container}>
+        {/* Search Results Count */}
+        {searchQuery && (
+          <div className={styles.searchResults}>
+            <p>
+              Found {totalResults} result{totalResults !== 1 ? "s" : ""} for "{searchQuery}"
+            </p>
+          </div>
+        )}
+
+        {/* Show message if no results */}
+        {searchQuery && totalResults === 0 ? (
+          <div className={styles.noResultsContainer}>
+            <p className={styles.noResultsText}>
+              No articles found matching "{searchQuery}". Try a different search term.
+            </p>
+          </div>
+        ) : (
+          <>
+            {!searchQuery && <TopLatestSection />}
+
+            {!searchQuery && (
+              <>
+                <FeaturedSection
+                  title="Research papers"
+                  articles={featuredResearchPapers}
+                  moreLink="/type-research-paper"
+                  backgroundColor="#F1E7D0"
+                />
+                <FeaturedSection 
+                  title="Articles" 
+                  articles={featuredArticles}
+                  moreLink="/type-article"
+                  backgroundColor="#fef3e2"
+                />
+                <FeaturedSection
+                  title="Legislative Comments"
+                  articles={featuredLegislative}
+                  moreLink="/type-legislative-comments"
+                  backgroundColor="#f0fdf4"
+                />
+              </>
+            )}
+
+            <div className={styles.allCategoriesWrapper}>
+              <div className={styles.allCategoriesGrid}>
+                <CategoryGrid
+                  title="Research papers"
+                  articles={filteredData.researchPapers}
+                  moreLink="/type-research-paper"
+                />
+                <CategoryGrid 
+                  title="Article" 
+                  articles={filteredData.articles}
+                  moreLink="/type-article"
+                />
+                <CategoryGrid
+                  title="Legislative Comments"
+                  articles={filteredData.legislative}
+                  moreLink="/type-legislative-comments"
+                />
+                <CategoryGrid
+                  title="Case Notes"
+                  articles={filteredData.caseNotes}
+                  moreLink="/type-case-notes"
+                />
+              </div>
+            </div>
+
+            {filteredData.bookReviews.length > 0 && (
+              <section className={styles.bookReviewsSection}>
+                <h2 className={styles.bookReviewsTitle}>Book Reviews</h2>
+                <div className={styles.bookReviewsScroll}>
+                  {filteredData.bookReviews.map((review) => (
+                    <a
+                      key={review.id}
+                      href={`/articles/${review.slug}`}
+                      className={styles.reviewCard}
+                    >
+                      <h4 className={styles.reviewTitle}>{review.title}</h4>
+                      <p className={styles.reviewAbstract}>
+                        {review.abstract?.substring(0, 120)}...
+                      </p>
+                      <div className={styles.reviewAuthor}>
+                        {review.profiles?.full_name || "Anonymous"}
+                      </div>
+                    </a>
+                  ))}
+                  {filteredData.bookReviews.length > 4 && (
+                    <div className={styles.moreReviewsCard}>
+                      <a href="/type-book-reviews">
+                        <button className={styles.moreReviewsBtn}>More...</button>
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   );
-}
+};
+
+export default ResearchPapersPage;

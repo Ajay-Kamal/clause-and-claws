@@ -155,9 +155,13 @@ export default function UploadArticle() {
         } = await supabase.auth.getUser();
 
         if (!user) {
+          alert("Please sign in before uploading an article.");
           setShowGoogleModal(true);
+          setUploading(false);
+          setSavingDraft(false);
           return;
         }
+
         setUser(user);
       } catch (error) {
         console.error("Auth error:", error);
@@ -293,6 +297,11 @@ export default function UploadArticle() {
 
   // Save Draft Function
   const handleSaveDraft = async () => {
+    if (!user) {
+      alert("Please sign in before saving a draft.");
+      setShowGoogleModal(true);
+      return;
+    }
     setErrors({});
     setSavingDraft(true);
 
@@ -398,7 +407,9 @@ export default function UploadArticle() {
         await supabase.from("article_coauthors").insert(coauthorInserts);
       }
 
-      alert("Draft saved successfully! You can continue editing from My Drafts page.");
+      alert(
+        "Draft saved successfully! You can continue editing from My Drafts page."
+      );
       router.push("/drafts");
     } catch (error) {
       console.error(error);
@@ -411,6 +422,11 @@ export default function UploadArticle() {
   // Submit for Review Function (modified from original handleSubmit)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      alert("Please sign in before submitting an article.");
+      setShowGoogleModal(true);
+      return;
+    }
     setErrors({});
     setUploading(true);
     setUploadProgress(0);
@@ -813,11 +829,14 @@ export default function UploadArticle() {
             </div>
           </div>
 
-          <CoAuthorSelector
-            selectedCoAuthors={selectedCoAuthors}
-            onCoAuthorsChange={setSelectedCoAuthors}
-            currentUserId={user.id}
-          />
+          {/* ✅ FIXED: Only render CoAuthorSelector when user is available */}
+          {user && (
+            <CoAuthorSelector
+              selectedCoAuthors={selectedCoAuthors}
+              onCoAuthorsChange={setSelectedCoAuthors}
+              currentUserId={user.id}
+            />
+          )}
 
           <div className={styles.fieldGroup}>
             <label className={styles.label}>
@@ -996,7 +1015,7 @@ export default function UploadArticle() {
               type="button"
               onClick={handleSaveDraft}
               className={styles.draftButton}
-              disabled={uploading || savingDraft || !formData.title.trim()}
+              disabled={uploading || loading || savingDraft || !user || !formData.title.trim()}
             >
               {savingDraft ? "Saving..." : "Save Draft"}
             </button>

@@ -124,7 +124,7 @@
 .associationSection {
   width: 100%;
   height: fit-content;
-  background-color: rgb(21 33 57);
+  background-color: rgb(17, 37, 66);
   font-family: Arial, Helvetica, sans-serif;
   padding: 2rem 0;
   display: flex;
@@ -134,7 +134,7 @@
 }
 
 .associationSectionWrapper {
-  max-width: min(100%, 1200px);
+  width: min(100%, 1330px);
   height: fit-content;
   display: flex;
   flex-direction: column;
@@ -155,13 +155,20 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 50%;
+  font-family: Garamond;
 }
 
 .association1 {
   color: white;
-  text-align: center;
+  text-align: right;
   width: 49%;
   font-size: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
 }
 
 .association1 p{
@@ -180,6 +187,15 @@
   text-align: center;
   width: 49%;
   font-size: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.association2 h1{
+  width: 100%;
 }
 
 .association2 p{

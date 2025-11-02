@@ -1,7 +1,7 @@
 // app/tags/[tag]/TagPageClient.tsx (Client Component)
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import ArticleCard from "@/components/ArticleCard";
 
 export default function TagPageClient({
@@ -12,33 +12,43 @@ export default function TagPageClient({
   initialArticles: any[];
 }) {
   const [articles, setArticles] = useState(initialArticles);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(2); // Start at 2 since we already have page 1
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
     if (loading || !hasMore) return;
     setLoading(true);
 
-    const res = await fetch(`/api/articles/by-tag?tag=${tag}&page=${page}`);
-    const newArticles = await res.json();
+    try {
+      const res = await fetch(`/api/articles/by-tag?tag=${encodeURIComponent(tag)}&page=${page}`);
+      const newArticles = await res.json();
 
-    if (newArticles.length === 0) {
-      setHasMore(false);
-    } else {
-      setArticles((prev) => [...prev, ...newArticles]);
-      setPage((prev) => prev + 1);
+      if (newArticles.length === 0) {
+        setHasMore(false);
+      } else {
+        // Filter out duplicates before adding
+        setArticles((prev) => {
+          const existingIds = new Set(prev.map(a => a.id));
+          const uniqueNewArticles = newArticles.filter((a: any) => !existingIds.has(a.id));
+          return [...prev, ...uniqueNewArticles];
+        });
+        setPage((prev) => prev + 1);
+      }
+    } catch (error) {
+      console.error("Error loading more articles:", error);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-  };
+  }, [loading, hasMore, page, tag]);
 
   useEffect(() => {
     const handleScroll = () => {
       if (
         window.innerHeight + window.scrollY >=
           document.body.offsetHeight - 200 &&
-        !loading
+        !loading &&
+        hasMore
       ) {
         loadMore();
       }
@@ -46,13 +56,13 @@ export default function TagPageClient({
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [loading, hasMore]);
+  }, [loadMore, loading, hasMore]); // Fixed dependencies
 
   return (
     <>
       <style>{`
         .tag-articles-container {
-          max-width: 1100px;
+          max-width: 1330px;
           margin: 0 auto;
           padding: 2.5rem 1.2rem 2rem 1.2rem;
         }
@@ -109,7 +119,12 @@ export default function TagPageClient({
           ))}
         </div>
         {loading && <p className="tag-articles-loading">Loading more...</p>}
-        {!hasMore && <p className="tag-articles-end">No more articles</p>}
+        {!hasMore && articles.length > 0 && (
+          <p className="tag-articles-end">No more articles</p>
+        )}
+        {articles.length === 0 && !loading && (
+          <p className="tag-articles-end">No articles found with this tag</p>
+        )}
       </div>
     </>
   );

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import styles from "../styles/FileViewer.module.css";
 
-// Set up PDF.js worker - using local file from public folder
+// Set up PDF.js worker
 if (typeof window !== "undefined") {
   pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 }
@@ -19,10 +19,9 @@ export default function FileViewer({ fileUrl, title }: FileViewerProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [numPages, setNumPages] = useState<number>(0);
-  const [scale, setScale] = useState(1.2);
   const [pdfDoc, setPdfDoc] = useState<any>(null);
-  const canvasRefs = useRef<Map<number, HTMLCanvasElement>>(new Map());
-  const renderTasks = useRef<Map<number, pdfjsLib.RenderTask>>(new Map());
+  const [containerWidth, setContainerWidth] = useState<number>(0);
+  const canvasRefs = useRef<HTMLCanvasElement[]>([]);
 
   // Load PDF document
   useEffect(() => {
@@ -52,9 +51,63 @@ export default function FileViewer({ fileUrl, title }: FileViewerProps) {
     };
   }, [fileUrl]);
 
-  // Render all pages when PDF loads or scale changes
+  // Measure container width with multiple attempts
   useEffect(() => {
-    if (!pdfDoc || !containerRef.current) return;
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    const measureWidth = () => {
+      if (containerRef.current) {
+        const width = containerRef.current.clientWidth;
+        if (width > 0) {
+          setContainerWidth(width);
+          return true;
+        }
+      }
+      return false;
+    };
+
+    // Try measuring immediately
+    if (measureWidth()) return;
+
+    // Keep trying until we get a valid width
+    const interval = setInterval(() => {
+      attempts++;
+      if (measureWidth() || attempts >= maxAttempts) {
+        clearInterval(interval);
+      }
+    }, 100);
+
+    // Set up resize observer once we have initial width
+    const resizeObserver = new ResizeObserver(() => {
+      if (containerRef.current) {
+        const width = containerRef.current.clientWidth;
+        if (width > 0) {
+          setContainerWidth(width);
+        }
+      }
+    });
+
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    window.addEventListener("resize", measureWidth);
+
+    return () => {
+      clearInterval(interval);
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", measureWidth);
+    };
+  }, []);
+
+  // Render all pages
+  useEffect(() => {
+    if (!pdfDoc || !containerRef.current || containerWidth === 0) return;
+
+    // Clear existing content
+    containerRef.current.innerHTML = "";
+    canvasRefs.current = [];
 
     const renderAllPages = async () => {
       for (let pageNum = 1; pageNum <= numPages; pageNum++) {
@@ -63,89 +116,76 @@ export default function FileViewer({ fileUrl, title }: FileViewerProps) {
     };
 
     renderAllPages();
-  }, [pdfDoc, scale, numPages]);
+  }, [pdfDoc, numPages, containerWidth]);
 
   const renderPage = async (pageNum: number) => {
-    if (!pdfDoc) return;
+    if (!pdfDoc || !containerRef.current || containerWidth === 0) return;
 
     try {
       const page = await pdfDoc.getPage(pageNum);
-      const viewport = page.getViewport({ scale });
+      
+      // Calculate scale to fit container width perfectly
+      const viewport = page.getViewport({ scale: 1 });
+      const scale = containerWidth / viewport.width;
+      const scaledViewport = page.getViewport({ scale });
 
-      // Get or create canvas
-      let canvas = canvasRefs.current.get(pageNum);
-      if (!canvas) {
-        canvas = document.createElement("canvas");
-        canvas.className = styles.pdfPage;
-        canvasRefs.current.set(pageNum, canvas);
-
-        const wrapper = document.createElement("div");
-        wrapper.className = styles.pageWrapper;
-        wrapper.appendChild(canvas);
-        containerRef.current?.appendChild(wrapper);
-      }
+      // Create canvas
+      const canvas = document.createElement("canvas");
+      canvas.className = styles.pdfPage;
+      containerRef.current.appendChild(canvas);
+      canvasRefs.current.push(canvas);
 
       const context = canvas.getContext("2d");
       if (!context) return;
 
       const outputScale = window.devicePixelRatio || 1;
-      canvas.width = Math.floor(viewport.width * outputScale);
-      canvas.height = Math.floor(viewport.height * outputScale);
-      canvas.style.width = Math.floor(viewport.width) + "px";
-      canvas.style.height = Math.floor(viewport.height) + "px";
+      canvas.width = Math.floor(scaledViewport.width * outputScale);
+      canvas.height = Math.floor(scaledViewport.height * outputScale);
+      canvas.style.width = Math.floor(scaledViewport.width) + "px";
+      canvas.style.height = Math.floor(scaledViewport.height) + "px";
 
-      // Clear and reset transform
-      context.setTransform(1, 0, 0, 1, 0, 0);
-      context.clearRect(0, 0, canvas.width, canvas.height);
       context.scale(outputScale, outputScale);
 
-      // Cancel previous render if exists
-      const prevTask = renderTasks.current.get(pageNum);
-      if (prevTask) prevTask.cancel();
-
-      const renderTask = page.render({ canvasContext: context, viewport });
-      renderTasks.current.set(pageNum, renderTask);
+      const renderTask = page.render({ 
+        canvasContext: context, 
+        viewport: scaledViewport 
+      });
 
       await renderTask.promise;
-      renderTasks.current.delete(pageNum);
     } catch (error: any) {
-      if (error.name === "RenderingCancelledException") {
-        console.log(`Render for page ${pageNum} cancelled`);
-      } else {
-        console.error(`Error rendering page ${pageNum}:`, error);
-      }
+      console.error(`Error rendering page ${pageNum}:`, error);
     }
-  };
-
-  const zoomIn = () => setScale((prev) => Math.min(prev + 0.1, 2.5));
-  const zoomOut = () => setScale((prev) => Math.max(prev - 0.2, 0.6));
-
-  const downloadPdf = async () => {
-    try {
-      const response = await fetch(fileUrl);
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = title ? `${title}.pdf` : "document.pdf";
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error downloading PDF:", error);
-    }
-  };
-
-  const openPdf = () => {
-    window.open(fileUrl, "_blank");
   };
 
   if (isLoading) {
     return (
       <div className={styles.loadingContainer}>
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-gray-300 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p>Loading PDF...</p>
+        <div style={{ textAlign: "center" }}>
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderWidth: 4,
+              borderStyle: "solid",
+              borderColor: "#e5e7eb",
+              borderTopColor: "#3b82f6",
+              borderRadius: "50%",
+              margin: "0 auto 16px",
+              animation: "lj-spin 1s linear infinite",
+              boxSizing: "border-box",
+            }}
+          />
+          <p style={{ margin: 0, color: "#6B7280", fontSize: "0.875rem" }}>
+            Loading document...
+          </p>
         </div>
+
+        <style>{`
+          @keyframes lj-spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
       </div>
     );
   }
@@ -153,14 +193,14 @@ export default function FileViewer({ fileUrl, title }: FileViewerProps) {
   if (hasError) {
     return (
       <div className={styles.errorContainer}>
-        <p>Failed to load PDF</p>
+        <p style={{ color: "#EF4444", fontSize: "0.875rem", margin: 0 }}>
+          Failed to load document. Please try again later.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className={styles.viewerContainer}>
-      <div className={styles.pdfContainer} ref={containerRef}></div>
-    </div>
+    <div className={styles.pdfContainer} ref={containerRef}></div>
   );
 }

@@ -8,6 +8,7 @@ import "./globals.css";
 import Welcome from "@/components/Welcome";
 import styles from "../styles/HomePage.module.css";
 import FeaturedAuthors from "@/components/FeaturedAuthors";
+import ClauseRank from "@/components/ClauseRank";
 
 export default async function HomePage() {
   const supabase = createSupabaseBrowserClient();
@@ -52,6 +53,7 @@ export default async function HomePage() {
   return (
     <div className={styles.homePage}>
       <Welcome />
+      <ClauseRank />
 
       <div className={styles.featuredSection}>
         <div className={styles.container}>

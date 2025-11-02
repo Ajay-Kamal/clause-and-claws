@@ -28,6 +28,8 @@ export async function getFeaturedArticles(): Promise<Article[]> {
     )
     .eq("published", true)
     .eq("is_featured", true)
+    .eq("approved", true)
+    .order("created_at", { ascending: false })
     .limit(3);  
 
   if (error || !data) {

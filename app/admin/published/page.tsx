@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { createSupabaseBrowserClient } from "@/utils/supabase/browser";
-import { adminFetch } from "@/utils/adminFetch";
 import styles from "../../../styles/PublishedPage.module.css";
 
 export default function PublishedPage() {
@@ -10,7 +9,7 @@ export default function PublishedPage() {
   const [articles, setArticles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { 
+  useEffect(() => {
     fetchPublished(); 
   }, []);
 

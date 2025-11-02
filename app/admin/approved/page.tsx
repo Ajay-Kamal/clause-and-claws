@@ -22,6 +22,7 @@ export default function ApprovedPage() {
       .eq("approved", true)
       .eq("payment_submitted", false)
       .eq("published", false)
+      .eq("draft", false)
       .order("created_at", { ascending: false });
     setArticles(data || []);
     setLoading(false);

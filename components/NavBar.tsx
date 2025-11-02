@@ -319,7 +319,7 @@ export default function NavBar() {
         <div className={styles["navbar-inner"]}>
           <div className={styles["navbar-logo"]}>
             <Link href="/" className={styles.logo}>
-              <img src="/images/logo-final.svg" alt="" />
+              <img src="/images/logo-cc.svg" alt="" />
             </Link>
           </div>
 

@@ -26,12 +26,12 @@ export default function Welcome() {
             Change
           </h1>
           <p>
-            Cutting-edge legal scholarship for law students and professionals.
-            Research, analysis and discourse on contemporary legal issues.
+            Cutting-edge legal scholarship for law students and <br />
+            professionals. Research, analysis and discourse on <br /> contemporary legal issues.
           </p>
           <div className={styles["btn-section"]}>
             <Link href="/articles" className={styles["btn-primary"]}>
-              Explore Publications
+              Explore Publications  
             </Link>
             <Link
               href="https://chat.whatsapp.com/HW1zoefd3yt4Q3EAu9WDdg"

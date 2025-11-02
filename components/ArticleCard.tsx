@@ -7,6 +7,7 @@ import { Article } from "@/types";
 interface ArticleCardProps {
   article: Article;
   showAuthor?: boolean;
+  showReadButton?: boolean;
 }
 
 // const renderTags = (tags: string[] | string | null) => {
@@ -24,6 +25,7 @@ interface ArticleCardProps {
 export default function ArticleCard({
   article,
   showAuthor = true,
+  showReadButton = true,
 }: ArticleCardProps) {
   // const allTags = renderTags(article.tags);
 
@@ -138,9 +140,14 @@ export default function ArticleCard({
         </div>
 
         {/* Read Article Button */}
-        <Link href={`/articles/${article.slug}`} className={styles.readButton}>
-          Read Article
-        </Link>
+        {showReadButton && (
+          <Link
+            href={`/articles/${article.slug}`}
+            className={styles.readButton}
+          >
+            Read Article
+          </Link>
+        )}
       </div>
     </div>
   );
