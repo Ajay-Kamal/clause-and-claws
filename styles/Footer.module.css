@@ -17,14 +17,14 @@
 /* Footer Content Grid */
 .footerContent {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3rem;  
 }
 
 /* Brand Section */
 .brandSection {
   grid-column: 1;
-  margin-bottom: 1rem ;
+  margin-bottom: 1rem;
 }
 
 .logo {
@@ -40,7 +40,7 @@
 }
 
 .logoText {
-  font-family: "Nunito", sans-serif;
+  font-family: garamond, sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
   color: #ffffff;
@@ -96,7 +96,7 @@
 }
 
 .sectionTitle {
-  font-family: "Nunito", sans-serif;
+  font-family: garamond, sans-serif;
   font-size: 1.125rem;
   font-weight: 600;
   color: #ffffff;
@@ -137,6 +137,77 @@
   outline: 1px solid #00a8e6;
   outline-offset: 2px;
   border-radius: 2px;
+}
+
+/* Newsletter Subscription Styles - From Old Footer */
+.newsletterText {
+  font-family: "Open Sans", sans-serif;
+  font-size: 0.9375rem;
+  color: #b0b0b0;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.newsletterForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.emailInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid #5a6a7f;
+  border-radius: 6px;
+  background: #3d4f63;
+  color: #ffffff;
+  font-size: 0.9375rem;
+  font-family: "Open Sans", sans-serif;
+  transition: border-color 0.2s ease;
+}
+
+.emailInput::placeholder {
+  color: #8a96a6;
+}
+
+.emailInput:focus {
+  outline: none;
+  border-color: #f4d942;
+}
+
+.emailInput:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.subscribeButton {
+  background: #f4d942;
+  color: #2d2d2d;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: "Open Sans", sans-serif;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.subscribeButton:hover:not(:disabled) {
+  background: #f0d02f;
+  transform: translateY(-1px);
+}
+
+.subscribeButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.subscribeButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 /* Footer Bottom */
@@ -191,7 +262,7 @@
 /* Responsive Design */
 @media (max-width: 1024px) {
   .footerContent {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 2.5rem;
   }
   
@@ -215,7 +286,7 @@
   }
   
   .footerContent {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 2rem;
   }
   
@@ -231,6 +302,10 @@
   
   .socialLinks {
     justify-content: flex-start;
+  }
+
+  .newsletterForm {
+    max-width: 100%;
   }
 }
 
@@ -290,7 +365,8 @@
     font-size: 1rem;
   }
   
-  .footerLink {
+  .footerLink,
+  .newsletterText {
     font-size: 0.875rem;
   }
   
@@ -300,6 +376,11 @@
   
   .copyright p {
     font-size: 0.8125rem;
+  }
+
+  .emailInput,
+  .subscribeButton {
+    font-size: 0.875rem;
   }
 }
 
@@ -333,6 +414,16 @@
   border-radius: 2px;
 }
 
+.emailInput:focus-visible {
+  outline: 2px solid #f4d942;
+  outline-offset: 2px;
+}
+
+.subscribeButton:focus-visible {
+  outline: 2px solid #f4d942;
+  outline-offset: 2px;
+}
+
 /* High Contrast Mode Support */
 @media (prefers-contrast: high) {
   .footer {
@@ -353,6 +444,14 @@
   .footerBottom {
     border-top: 2px solid #ffffff;
   }
+
+  .emailInput {
+    border: 2px solid #ffffff;
+  }
+
+  .subscribeButton {
+    border: 2px solid #000000;
+  }
 }
 
 /* Reduced Motion Support */
@@ -368,6 +467,14 @@
   .footerLink,
   .legalLink {
     transition: none;
+  }
+
+  .subscribeButton:hover:not(:disabled) {
+    transform: none;
+  }
+
+  .subscribeButton:active:not(:disabled) {
+    transform: none;
   }
 }
 
@@ -397,12 +504,18 @@
   }
   
   .brandDescription,
-  .copyright p {
+  .copyright p,
+  .newsletterText {
     color: #333;
   }
   
   .footerLink[href^="http"]::after {
     content: " (" attr(href) ")";
     font-size: 0.75rem;
+  }
+
+  .newsletterForm,
+  .subscribeButton {
+    display: none;
   }
 }

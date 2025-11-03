@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import styles from "@/styles/ArticlesPage.module.css";
+import ArticleCard from "@/components/ArticleCard";
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,7 +11,9 @@ const supabase = createBrowserClient(
 );
 
 const ResearchPapersPage: React.FC = () => {
-  const [featuredResearchPapers, setFeaturedResearchPapers] = useState<any[]>([]);
+  const [featuredResearchPapers, setFeaturedResearchPapers] = useState<any[]>(
+    []
+  );
   const [featuredArticles, setFeaturedArticles] = useState<any[]>([]);
   const [featuredLegislative, setFeaturedLegislative] = useState<any[]>([]);
   const [allResearchPapers, setAllResearchPapers] = useState<any[]>([]);
@@ -23,7 +26,6 @@ const ResearchPapersPage: React.FC = () => {
 
   useEffect(() => {
     fetchAllData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchAllData = async () => {
@@ -113,7 +115,6 @@ const ResearchPapersPage: React.FC = () => {
     }
   };
 
-  // Filter articles based on search query
   const filteredData = useMemo(() => {
     if (!searchQuery.trim()) {
       return {
@@ -139,10 +140,10 @@ const ResearchPapersPage: React.FC = () => {
       });
 
     return {
-      researchPapers: filterArticles(allResearchPapers).slice(0, 5),
-      articles: filterArticles(allArticles).slice(0, 5),
-      legislative: filterArticles(allLegislative).slice(0, 5),
-      caseNotes: filterArticles(allCaseNotes).slice(0, 5),
+      researchPapers: filterArticles(allResearchPapers),
+      articles: filterArticles(allArticles),
+      legislative: filterArticles(allLegislative),
+      caseNotes: filterArticles(allCaseNotes),
       bookReviews: filterArticles(bookReviews),
     };
   }, [
@@ -154,17 +155,20 @@ const ResearchPapersPage: React.FC = () => {
     bookReviews,
   ]);
 
-  // Calculate total results
-  const totalResults = useMemo(() => {
-    if (!searchQuery.trim()) return 0;
-    return (
-      filteredData.researchPapers.length +
-      filteredData.articles.length +
-      filteredData.legislative.length +
-      filteredData.caseNotes.length +
-      filteredData.bookReviews.length
-    );
+  // Combine all search results into a single array
+  const allSearchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    
+    return [
+      ...filteredData.researchPapers,
+      ...filteredData.articles,
+      ...filteredData.legislative,
+      ...filteredData.caseNotes,
+      ...filteredData.bookReviews,
+    ];
   }, [filteredData, searchQuery]);
+
+  const totalResults = allSearchResults.length;
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
@@ -172,6 +176,10 @@ const ResearchPapersPage: React.FC = () => {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+  };
+
+  const clearSearch = () => {
+    setSearchQuery("");
   };
 
   const formatDate = (dateString?: string | null) => {
@@ -189,16 +197,19 @@ const ResearchPapersPage: React.FC = () => {
     const latestArticle = filteredData.articles[0];
     const latestLC = filteredData.legislative.slice(0, 4);
 
-    // Don't show section if searching and no results
-    if (searchQuery && latestRP.length === 0 && !latestArticle && latestLC.length === 0) {
+    if (
+      searchQuery &&
+      latestRP.length === 0 &&
+      !latestArticle &&
+      latestLC.length === 0
+    ) {
       return null;
     }
 
     return (
       <section className={styles.topLatestSection}>
         <div className={styles.topLatestGrid}>
-          {/* Research Papers Column */}
-          <div className={styles.topLatestColumn}>
+          <div className={styles.topLatestColumnRP}>
             <h2 className={styles.topLatestTitle}>Research papers</h2>
             <div className={styles.topLatestList}>
               {latestRP.length > 0 ? (
@@ -208,7 +219,9 @@ const ResearchPapersPage: React.FC = () => {
                     href={`/articles/${article.slug}`}
                     className={styles.topLatestItem}
                   >
-                    <h3 className={styles.topLatestItemTitle}>{article.title}</h3>
+                    <h3 className={styles.topLatestItemTitle}>
+                      {article.title}
+                    </h3>
                     <p className={styles.topLatestItemAuthor}>
                       {article.profiles?.full_name || "Anonymous"}
                     </p>
@@ -220,14 +233,19 @@ const ResearchPapersPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Featured Article Center */}
           <div className={styles.topLatestCenter}>
-            <h2 className={styles.topLatestTitle}>Articles</h2>
+            <h2 className={styles.topLatestTitleAt}>Article</h2>
             {latestArticle ? (
               <a
                 href={`/articles/${latestArticle.slug}`}
                 className={styles.topLatestFeatured}
               >
+                <h3 className={styles.topLatestFeaturedTitle}>
+                  {latestArticle.title}
+                </h3>
+                <p className={styles.topLatestFeaturedAuthor}>
+                  {latestArticle.profiles?.full_name || "Anonymous"}
+                </p>
                 <img
                   src={
                     latestArticle.thumbnail_url ||
@@ -236,19 +254,12 @@ const ResearchPapersPage: React.FC = () => {
                   alt={latestArticle.title}
                   className={styles.topLatestFeaturedImage}
                 />
-                <h3 className={styles.topLatestFeaturedTitle}>
-                  {latestArticle.title}
-                </h3>
-                <p className={styles.topLatestFeaturedAuthor}>
-                  {latestArticle.profiles?.full_name || "Anonymous"}
-                </p>
               </a>
             ) : (
               <p className={styles.noResults}>No articles found</p>
             )}
           </div>
 
-          {/* Legislative Comments Column */}
           <div className={styles.topLatestColumn}>
             <h2 className={styles.topLatestTitle}>Legislative comments</h2>
             <div className={styles.topLatestList}>
@@ -259,14 +270,18 @@ const ResearchPapersPage: React.FC = () => {
                     href={`/articles/${article.slug}`}
                     className={styles.topLatestItem}
                   >
-                    <h3 className={styles.topLatestItemTitle}>{article.title}</h3>
+                    <h3 className={styles.topLatestItemTitle}>
+                      {article.title}
+                    </h3>
                     <p className={styles.topLatestItemAuthor}>
                       {article.profiles?.full_name || "Anonymous"}
                     </p>
                   </a>
                 ))
               ) : (
-                <p className={styles.noResults}>No legislative comments found</p>
+                <p className={styles.noResults}>
+                  No legislative comments found
+                </p>
               )}
             </div>
           </div>
@@ -275,124 +290,251 @@ const ResearchPapersPage: React.FC = () => {
     );
   };
 
-  const FeaturedSection: React.FC<{
+  const FeaturedStandardSection: React.FC<{
     title: string;
     articles: any[];
-    buttonText?: string;
     moreLink?: string;
-    backgroundColor?: string;
-  }> = ({ title, articles, buttonText = "More...", moreLink = "#", backgroundColor }) => {
+  }> = ({ title, articles, moreLink = "#" }) => {
     if (!articles || articles.length === 0) return null;
 
     const mainArticle = articles[0];
     const sideArticles = articles.slice(1, 4);
 
     return (
-      <section className={styles.featuredSection} style={backgroundColor ? { backgroundColor } : undefined}>
-        <div className={styles.headerRow}>
-          <h2 className={styles.sectionTitle}>{title}</h2>
-          <a href={moreLink} className={styles.moreBtn}>{buttonText}</a>
-        </div>
+      <section className={styles.featuredStandardSection}>
+        <div className={styles.featuredStandardSectionWrapper}>
+          <div className={styles.featuredStandardHeader}>
+            <h2 className={styles.featuredStandardTitle}>{title}</h2>
+            <a href={moreLink} className={styles.featuredStandardMoreBtn}>
+              More...
+            </a>
+          </div>
 
-        <div className={styles.featuredGrid}>
-          <a href={`/articles/${mainArticle.slug}`} className={styles.mainCard}>
-            <img
-              src={
-                mainArticle.thumbnail_url ||
-                "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400"
-              }
-              alt={mainArticle.title}
-              className={styles.mainImage}
-            />
-            <div className={styles.mainContent}>
-              <div>
-                <h3 className={styles.mainTitle}>{mainArticle.title}</h3>
-                <p className={styles.mainAbstract}>
-                  {mainArticle.abstract?.substring(0, 180)}...
-                </p>
-              </div>
-
-              <div className={styles.mainFooter}>
-                <div className={styles.mainMeta}>
-                  <span className={styles.authorName}>
-                    {mainArticle.profiles?.full_name || "Anonymous"}
-                  </span>
-                  <span className={styles.dateText}>
-                    {formatDate(mainArticle.created_at)}
-                  </span>
+          <div className={styles.featuredStandardGrid}>
+            <a
+              href={`/articles/${mainArticle.slug}`}
+              className={styles.featuredStandardMainCard}
+            >
+              <img
+                src={
+                  mainArticle.thumbnail_url ||
+                  "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400"
+                }
+                alt={mainArticle.title}
+                className={styles.featuredStandardMainImage}
+              />
+              <div className={styles.featuredStandardMainContent}>
+                <div>
+                  <h3 className={styles.featuredStandardMainTitle}>
+                    {mainArticle.title}
+                  </h3>
+                  <p className={styles.featuredStandardMainAbstract}>
+                    {mainArticle.abstract?.substring(0, 180)}...
+                  </p>
                 </div>
-                <div className={styles.statsBar}>
-                  <span className={styles.statItem}>
-                    Reads: <strong>{mainArticle.views || 94}</strong>
-                  </span>
-                  <span className={styles.statItem}>
-                    Likes: <strong>{mainArticle.likes || 94}</strong>
-                  </span>
-                  <span className={styles.statItem}>
-                    Impact: <strong>94</strong>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </a>
 
-          <div className={styles.sideCards}>
-            {sideArticles.map((article) => (
-              <a
-                key={article.id}
-                href={`/articles/${article.slug}`}
-                className={styles.sideCard}
-              >
-                <img
-                  src={
-                    article.thumbnail_url ||
-                    "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=200"
-                  }
-                  alt={article.title}
-                  className={styles.sideImage}
-                />
-                <div className={styles.sideContent}>
-                  <h4 className={styles.sideTitle}>{article.title}</h4>
-                  <div className={styles.sideMeta}>
-                    <span className={styles.sideAuthor}>
-                      {article.profiles?.full_name || "Anonymous"}
+                <div className={styles.featuredStandardMainFooter}>
+                  <div className={styles.featuredStandardMainMeta}>
+                    <span className={styles.featuredStandardAuthorName}>
+                      {mainArticle.profiles?.full_name || "Anonymous"}
                     </span>
-                    <span className={styles.sideDate}>
-                      {formatDate(article.created_at)}
+                    <span className={styles.featuredStandardDateText}>
+                      {formatDate(mainArticle.created_at)}
                     </span>
                   </div>
-                  <div className={styles.sideStats}>
-                    <span>
-                      Reads: <strong>{article.views || 94}</strong>
+                  <div className={styles.featuredStandardStatsBar}>
+                    <span className={styles.featuredStandardStatItem}>
+                      Reads: <strong>{mainArticle.views || 94}</strong>
                     </span>
-                    <span>
-                      Likes: <strong>{article.likes || 94}</strong>
+                    <span className={styles.featuredStandardStatItem}>
+                      Likes: <strong>{mainArticle.likes || 94}</strong>
                     </span>
-                    <span>
+                    <span className={styles.featuredStandardStatItem}>
                       Impact: <strong>94</strong>
                     </span>
                   </div>
                 </div>
-              </a>
-            ))}
+              </div>
+            </a>
+
+            <div className={styles.featuredStandardSideCards}>
+              {sideArticles.map((article) => (
+                <a
+                  key={article.id}
+                  href={`/articles/${article.slug}`}
+                  className={styles.featuredStandardSideCard}
+                >
+                  <img
+                    src={
+                      article.thumbnail_url ||
+                      "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=200"
+                    }
+                    alt={article.title}
+                    className={styles.featuredStandardSideImage}
+                  />
+                  <div className={styles.featuredStandardSideContent}>
+                    <h4 className={styles.featuredStandardSideTitle}>
+                      {article.title}
+                    </h4>
+                    <div className={styles.featuredStandardSideMeta}>
+                      <span className={styles.featuredStandardSideAuthor}>
+                        {article.profiles?.full_name || "Anonymous"}
+                      </span>
+                      <span className={styles.featuredStandardSideDate}>
+                        {formatDate(article.created_at)}
+                      </span>
+                    </div>
+                    <div className={styles.featuredStandardSideStats}>
+                      <span>
+                        Reads: <strong>{article.views || 94}</strong>
+                      </span>
+                      <span>
+                        Likes: <strong>{article.likes || 94}</strong>
+                      </span>
+                      <span>
+                        Impact: <strong>94</strong>
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </section>
     );
   };
 
-  const CategoryGrid: React.FC<{ 
-    title: string; 
+  const FeaturedArticlesSection: React.FC<{
     articles: any[];
     moreLink?: string;
-  }> = ({
-    title,
-    articles,
-    moreLink = "#",
-  }) => {
+  }> = ({ articles, moreLink = "#" }) => {
+    if (!articles || articles.length === 0) return null;
+
+    const mainArticle = articles[0];
+    const sideArticles = articles.slice(1, 4);
+
+    return (
+      <section className={styles.featuredArticlesSection}>
+        <div className={styles.featuredArticlesSectionWrapper}>
+          <div className={styles.featuredArticlesHeader}>
+            <h2 className={styles.featuredArticlesTitle}>Articles</h2>
+            <a href={moreLink} className={styles.featuredArticlesMoreBtn}>
+              More...
+            </a>
+          </div>
+
+          <div className={styles.featuredArticlesGrid}>
+            <a
+              href={`/articles/${mainArticle.slug}`}
+              className={styles.featuredArticlesMainCard}
+            >
+              <img
+                src={
+                  mainArticle.thumbnail_url ||
+                  "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400"
+                }
+                alt={mainArticle.title}
+                className={styles.featuredArticlesMainImage}
+              />
+              <div className={styles.featuredArticlesMainContent}>
+                <div>
+                  <h3 className={styles.featuredArticlesMainTitle}>
+                    {mainArticle.title}
+                  </h3>
+                  <p className={styles.featuredArticlesMainAbstract}>
+                    {mainArticle.abstract?.substring(0, 180)}...
+                  </p>
+                </div>
+
+                <div className={styles.featuredArticlesMainFooter}>
+                  <div className={styles.featuredArticlesMainMeta}>
+                    <span className={styles.featuredArticlesAuthorName}>
+                      {mainArticle.profiles?.full_name || "Anonymous"}
+                    </span>
+                    <span className={styles.featuredArticlesDateText}>
+                      {formatDate(mainArticle.created_at)}
+                    </span>
+                  </div>
+                  <div className={styles.featuredArticlesStatsBar}>
+                    <span className={styles.featuredArticlesStatItem}>
+                      Reads: <strong>{mainArticle.views || 94}</strong>
+                    </span>
+                    <span className={styles.featuredArticlesStatItem}>
+                      Likes: <strong>{mainArticle.likes || 94}</strong>
+                    </span>
+                    <span className={styles.featuredArticlesStatItem}>
+                      Impact: <strong>94</strong>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </a>
+
+            <div className={styles.featuredArticlesSideCards}>
+              {sideArticles.map((article) => (
+                <a
+                  key={article.id}
+                  href={`/articles/${article.slug}`}
+                  className={styles.featuredArticlesSideCard}
+                >
+                  <img
+                    src={
+                      article.thumbnail_url ||
+                      "https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=200"
+                    }
+                    alt={article.title}
+                    className={styles.featuredArticlesSideImage}
+                  />
+                  <div className={styles.featuredArticlesSideContent}>
+                    <h4 className={styles.featuredArticlesSideTitle}>
+                      {article.title}
+                    </h4>
+                    <div className={styles.featuredArticlesSideMeta}>
+                      <span className={styles.featuredArticlesSideAuthor}>
+                        {article.profiles?.full_name || "Anonymous"}
+                      </span>
+                      <span className={styles.featuredArticlesSideDate}>
+                        {formatDate(article.created_at)}
+                      </span>
+                    </div>
+                    <div className={styles.featuredArticlesSideStats}>
+                      <span>
+                        Reads: <strong>{article.views || 94}</strong>
+                      </span>
+                      <span>
+                        Likes: <strong>{article.likes || 94}</strong>
+                      </span>
+                      <span>
+                        Impact: <strong>94</strong>
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  const CategoryGrid: React.FC<{
+    title: string;
+    articles: any[];
+    moreLink?: string;
+    rightBorder : boolean;
+  }> = ({ title, articles, moreLink = "#" , rightBorder = true}) => {
     if (!articles || articles.length === 0) return null;
     return (
-      <div className={styles.categoryCol}>
+      <div
+        className={styles.categoryCol}
+        style={
+          rightBorder
+            ? { borderRight: "1px solid rgba(237, 228, 194, 1)" }
+            : {}
+        }
+      >
         <h3 className={styles.categoryTitle}>{title}</h3>
         <div className={styles.categoryItems}>
           {articles.map((article) => (
@@ -444,71 +586,99 @@ const ResearchPapersPage: React.FC = () => {
         </div>
       </div>
 
-      <div className={styles.container}>
-        {/* Search Results Count */}
-        {searchQuery && (
-          <div className={styles.searchResults}>
-            <p>
-              Found {totalResults} result{totalResults !== 1 ? "s" : ""} for "{searchQuery}"
-            </p>
-          </div>
-        )}
+      {/* Search Results Overlay */}
+      {searchQuery && (
+        <div className={styles.searchOverlay}>
+          <div className={styles.searchOverlayContent}>
+            <div className={styles.searchOverlayHeader}>
+              <h2 className={styles.searchOverlayTitle}>
+                Search Results for "{searchQuery}"
+              </h2>
+              <button 
+                onClick={clearSearch} 
+                className={styles.closeSearchBtn}
+                aria-label="Close search"
+              >
+                ✕
+              </button>
+            </div>
 
-        {/* Show message if no results */}
-        {searchQuery && totalResults === 0 ? (
-          <div className={styles.noResultsContainer}>
-            <p className={styles.noResultsText}>
-              No articles found matching "{searchQuery}". Try a different search term.
+            <p className={styles.searchResultsCount}>
+              Found {totalResults} result{totalResults !== 1 ? "s" : ""}
             </p>
-          </div>
-        ) : (
-          <>
-            {!searchQuery && <TopLatestSection />}
 
-            {!searchQuery && (
-              <>
-                <FeaturedSection
-                  title="Research papers"
-                  articles={featuredResearchPapers}
-                  moreLink="/type-research-paper"
-                  backgroundColor="#F1E7D0"
-                />
-                <FeaturedSection 
-                  title="Articles" 
-                  articles={featuredArticles}
-                  moreLink="/type-article"
-                  backgroundColor="#fef3e2"
-                />
-                <FeaturedSection
-                  title="Legislative Comments"
-                  articles={featuredLegislative}
-                  moreLink="/type-legislative-comments"
-                  backgroundColor="#f0fdf4"
-                />
-              </>
+            {totalResults === 0 ? (
+              <div className={styles.noResultsContainer}>
+                <p className={styles.noResultsText}>
+                  No articles found matching "{searchQuery}". Try a different search term.
+                </p>
+              </div>
+            ) : (
+              <div className={styles.searchResultsGrid}>
+                {allSearchResults.map((article) => (
+                  <ArticleCard
+                    key={article.id}
+                    article={article}
+                    showAuthor={true}
+                    showReadButton={true}
+                  />
+                ))}
+              </div>
             )}
+          </div>
+        </div>
+      )}
+
+      <div className={styles.container}>
+        {!searchQuery && (
+          <>
+            <TopLatestSection />
+
+            {/* Research Papers - Standard Style */}
+            <FeaturedStandardSection
+              title="Research papers"
+              articles={featuredResearchPapers}
+              moreLink="/articles/type/research-paper"
+            />
+
+            {/* Articles - Same Layout, Different Colors */}
+            <FeaturedArticlesSection
+              articles={featuredArticles}
+              moreLink="/articles/type/article"
+            />
+
+            {/* Legislative Comments - Standard Style */}
+            <FeaturedStandardSection
+              title="Legislative Comments"
+              articles={featuredLegislative}
+              moreLink="/articles/type/legislative-comments"
+            />
 
             <div className={styles.allCategoriesWrapper}>
               <div className={styles.allCategoriesGrid}>
                 <CategoryGrid
                   title="Research papers"
                   articles={filteredData.researchPapers}
-                  moreLink="/type-research-paper"
+                  moreLink="/articles/type/research-paper"
+                  rightBorder={true}
                 />
-                <CategoryGrid 
-                  title="Article" 
+                <CategoryGrid
+                  title="Article"
                   articles={filteredData.articles}
-                  moreLink="/type-article"
+                  moreLink="/articles/type/article"
+                  rightBorder={true}
                 />
                 <CategoryGrid
                   title="Legislative Comments"
                   articles={filteredData.legislative}
-                  moreLink="/type-legislative-comments"
+                  moreLink="/articles/type/legislative-comments"
+                  rightBorder={true}
                 />
                 <CategoryGrid
                   title="Case Notes"
                   articles={filteredData.caseNotes}
-                  moreLink="/type-case-notes"
+                  moreLink="/articles/type/case-notes"
+                  rightBorder={false}
                 />
               </div>
             </div>
@@ -524,18 +694,14 @@ const ResearchPapersPage: React.FC = () => {
                       className={styles.reviewCard}
                     >
                       <h4 className={styles.reviewTitle}>{review.title}</h4>
-                      <p className={styles.reviewAbstract}>
-                        {review.abstract?.substring(0, 120)}...
-                      </p>
-                      <div className={styles.reviewAuthor}>
-                        {review.profiles?.full_name || "Anonymous"}
-                      </div>
                     </a>
                   ))}
                   {filteredData.bookReviews.length > 4 && (
                     <div className={styles.moreReviewsCard}>
-                      <a href="/type-book-reviews">
-                        <button className={styles.moreReviewsBtn}>More...</button>
+                      <a href="/articles/type/book-reviews">
+                        <button className={styles.moreReviewsBtn}>
+                          More...
+                        </button>
                       </a>
                     </div>
                   )}

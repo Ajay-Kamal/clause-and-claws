@@ -1,7 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { createBrowserClient } from "@supabase/ssr";
 import styles from "../styles/Footer.module.css";
 
 const LinkedInIcon = () => (
@@ -68,6 +69,100 @@ const WhatsAppIcon = () => (
 );
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
+  
+  // Create Supabase client
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+
+  // Load user data on mount
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      console.log("User data:", user); // Debug log
+      
+      if (user && !userError) {
+        setIsLoggedIn(true);
+        setUserId(user.id);
+        // Auto-fill email from authenticated user
+        setEmail(user.email || "");
+        
+        // Check if already subscribed from profiles table
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("subscribed")
+          .eq("id", user.id)
+          .single();
+        
+        console.log("Profile data:", profile, "Error:", profileError); // Debug log
+        
+        if (profile && !profileError) {
+          setIsSubscribed(profile.subscribed || false);
+        }
+      } else {
+        setIsLoggedIn(false);
+        console.log("No user logged in or error:", userError);
+      }
+    } catch (error) {
+      console.error("Error loading user data:", error);
+      setIsLoggedIn(false);
+    }
+  };
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Check if user is logged in
+    if (!isLoggedIn || !userId) {
+      alert("Please login to subscribe to our newsletter");
+      return;
+    }
+
+    console.log("Attempting to subscribe, userId:", userId); // Debug log
+    setLoading(true);
+
+    try {
+      // Update subscription status in profiles table
+      const { data, error } = await supabase
+        .from("profiles")
+        .update({ subscribed: true })
+        .eq("id", userId)
+        .select();
+
+      console.log("Update result:", data, "Error:", error); // Debug log
+
+      if (error) {
+        console.error("Subscription error details:", error);
+        throw error;
+      }
+
+      setIsSubscribed(true);
+      alert("Successfully subscribed to our newsletter!");
+      
+    } catch (error: unknown) {
+      console.error("Subscription error:", error);
+      if (error instanceof Error) {
+        alert(error.message || "Failed to subscribe. Please try again.");
+      } else {
+        alert(String(error) || "Failed to subscribe. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
@@ -188,6 +283,33 @@ export default function Footer() {
                 </Link>
               </li>
             </ul>
+          </div>
+
+          {/* Newsletter Section - 4th Column */}
+          <div className={styles.footerSection}>
+            <h3 className={styles.sectionTitle}>Stay Updated</h3>
+            <p className={styles.newsletterText}>
+              Subscribe to our newsletter for the latest updates
+            </p>
+            <form onSubmit={handleSubscribe} className={styles.newsletterForm}>
+              {isLoggedIn && (
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  className={styles.emailInput}
+                  value={email}
+                  readOnly
+                  disabled={isSubscribed}
+                />
+              )}
+              <button 
+                type="submit" 
+                className={styles.subscribeButton}
+                disabled={loading || (isLoggedIn && isSubscribed)}
+              >
+                {loading ? "Subscribing..." : isSubscribed ? "Subscribed ✓" : "Subscribe"}
+              </button>
+            </form>
           </div>
         </div>
 

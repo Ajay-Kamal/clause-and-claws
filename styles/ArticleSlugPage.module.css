@@ -14,10 +14,9 @@
 
 /* Article Wrapper */
 .articleWrapper {
-  background: #FFFFFF;
+  background: #F5F1E8;
   border-radius: 8px;
   padding: 2.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* Type Badge */

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import styles from "../styles/Welcome.module.css";
 import Link from "next/link";
 import { EB_Garamond } from "next/font/google";
@@ -12,10 +13,56 @@ const eb = EB_Garamond({
 });
 
 export default function Welcome() {
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const slides = [
+    "./images/welcome-banner.svg",
+    "./images/welcome-banner.svg",
+    "./images/welcome-banner.svg",
+    "./images/welcome-banner.svg",
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 4000); // Change slide every 4 seconds
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
+
   return (
     <div className={styles.welcomeContainer}>
       <div className={styles.welcomeWrapper}>
-        <img src="./images/welcome-banner.svg" alt="WELCOME" />
+        <div className={styles.carouselContainer}>
+          <div 
+            className={styles.carouselTrack}
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+          >
+            {slides.map((slide, index) => (
+              <img
+                key={index}
+                src={slide}
+                alt="WELCOME"
+                className={styles.carouselImage}
+              />
+            ))}
+          </div>
+          <div className={styles.carouselDots}>
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                className={`${styles.dot} ${
+                  index === currentSlide ? styles.activeDot : ""
+                }`}
+                onClick={() => goToSlide(index)}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+        </div>
         <div className={styles.welcomeText}>
           <h1>
             Where Clauses <br />

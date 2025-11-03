@@ -138,10 +138,12 @@ export default function ArticleClient({ article }: { article: Article }) {
     watermarked_pdf_url,
     thumbnail_url,
     created_at,
-    type = "Article",
+    type,
     profiles,
   } = article;
 
+  console.log("Article data in client:", article);
+  
   const [likeCount, setLikeCount] = useState(likes);
   const [viewCount, setViewCount] = useState(views);
   const [liked, setLiked] = useState(false);
@@ -340,7 +342,7 @@ export default function ArticleClient({ article }: { article: Article }) {
             <div className={styles.pdfSection}>
               <h2 className={styles.sectionHeading}>Full Document</h2>
               <div className={styles.pdfViewerWrapper}>
-                <FileViewer fileUrl={watermarked_pdf_url} title={title} />
+                <FileViewer fileUrl={watermarked_pdf_url} title={title} backgroundColor="#f5f1e8"/>
               </div>
             </div>
           )}

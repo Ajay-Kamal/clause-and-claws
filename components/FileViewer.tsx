@@ -12,9 +12,10 @@ if (typeof window !== "undefined") {
 interface FileViewerProps {
   fileUrl: string;
   title?: string;
+  backgroundColor?: string; // Allow customizable background color
 }
 
-export default function FileViewer({ fileUrl, title }: FileViewerProps) {
+export default function FileViewer({ fileUrl, title, backgroundColor = "#F5F1E8" }: FileViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -116,7 +117,7 @@ export default function FileViewer({ fileUrl, title }: FileViewerProps) {
     };
 
     renderAllPages();
-  }, [pdfDoc, numPages, containerWidth]);
+  }, [pdfDoc, numPages, containerWidth, backgroundColor]);
 
   const renderPage = async (pageNum: number) => {
     if (!pdfDoc || !containerRef.current || containerWidth === 0) return;
@@ -135,7 +136,7 @@ export default function FileViewer({ fileUrl, title }: FileViewerProps) {
       containerRef.current.appendChild(canvas);
       canvasRefs.current.push(canvas);
 
-      const context = canvas.getContext("2d");
+      const context = canvas.getContext("2d", { alpha: false });
       if (!context) return;
 
       const outputScale = window.devicePixelRatio || 1;
@@ -144,11 +145,18 @@ export default function FileViewer({ fileUrl, title }: FileViewerProps) {
       canvas.style.width = Math.floor(scaledViewport.width) + "px";
       canvas.style.height = Math.floor(scaledViewport.height) + "px";
 
+      // Fill with background color BEFORE scaling
+      context.fillStyle = backgroundColor;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Now scale for rendering
       context.scale(outputScale, outputScale);
 
+      // Render PDF with background specified
       const renderTask = page.render({ 
         canvasContext: context, 
-        viewport: scaledViewport 
+        viewport: scaledViewport,
+        background: backgroundColor
       });
 
       await renderTask.promise;
@@ -159,7 +167,7 @@ export default function FileViewer({ fileUrl, title }: FileViewerProps) {
 
   if (isLoading) {
     return (
-      <div className={styles.loadingContainer}>
+      <div className={styles.loadingContainer} style={{ backgroundColor }}>
         <div style={{ textAlign: "center" }}>
           <div
             style={{
@@ -201,6 +209,10 @@ export default function FileViewer({ fileUrl, title }: FileViewerProps) {
   }
 
   return (
-    <div className={styles.pdfContainer} ref={containerRef}></div>
+    <div 
+      className={styles.pdfContainer} 
+      ref={containerRef}
+      style={{ backgroundColor }}
+    ></div>
   );
 }
