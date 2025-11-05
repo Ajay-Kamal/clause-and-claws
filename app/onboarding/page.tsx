@@ -330,7 +330,6 @@ export default function Onboarding() {
         link: formData.link.trim() || null,
         avatar_url,
         email: user.email,
-        updated_at: new Date().toISOString(),
       };
 
       console.log("💾 Saving profile data:", profileData);
