@@ -28,56 +28,8 @@ export default function Onboarding() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        if (!user) {
-          router.push("/");
-          return;
-        }
-
-        setCurrentUser(user);
-
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", user.id)
-          .single();
-
-        if (error) {
-          console.error("Error fetching profile:", error);
-          setProfile(null);
-        } else if (data) {
-          if (data.username && data.full_name) {
-            router.push("/");
-          } else {
-            setProfile(data);
-            setAvatarPreview(data.avatar_url || "/default-avatar.webp");
-            setFormData(prev => ({
-              ...prev,
-              username: data.username || "",
-              full_name: data.full_name || "",
-              bio: data.bio || "",
-              location: data.location || "",
-              profession: data.profession || "",
-              link: data.link || "",
-            }));
-          }
-        }
-      } catch (error) {
-        console.error("Unexpected error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
-  }, [router]);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -89,7 +41,63 @@ export default function Onboarding() {
     avatar_url: "",
   });
 
-  const [submitting, setSubmitting] = useState(false);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        console.log("🔍 Fetching user profile...");
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          console.log("❌ No user found, redirecting to home");
+          router.push("/");
+          return;
+        }
+
+        console.log("✅ User found:", user.id);
+        setCurrentUser(user);
+
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", user.id)
+          .single();
+
+        if (error) {
+          console.error("❌ Error fetching profile:", error);
+          setProfile(null);
+        } else if (data) {
+          console.log("✅ Profile data:", data);
+          
+          // Check if profile is already complete
+          if (data.username && data.full_name && data.bio) {
+            console.log("✅ Profile already complete, redirecting...");
+            router.push("/");
+            return;
+          }
+          
+          setProfile(data);
+          setAvatarPreview(data.avatar_url || "/default-avatar.webp");
+          setFormData(prev => ({
+            ...prev,
+            username: data.username || "",
+            full_name: data.full_name || "",
+            bio: data.bio || "",
+            location: data.location || "",
+            profession: data.profession || "",
+            link: data.link || "",
+          }));
+        }
+      } catch (error) {
+        console.error("❌ Unexpected error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, [router]);
 
   const checkUsername = async (username: string) => {
     if (!username) {
@@ -99,6 +107,7 @@ export default function Onboarding() {
 
     setCheckingUsername(true);
     try {
+      console.log("🔍 Checking username availability:", username);
       const { data } = await supabase
         .from("profiles")
         .select("id")
@@ -106,9 +115,11 @@ export default function Onboarding() {
         .maybeSingle();
 
       const available = !data || (currentUser && data.id === currentUser.id);
+      console.log("✅ Username available:", available);
       setUsernameAvailable(available);
     } catch (error) {
-      console.error("Error checking username:", error);
+      console.error("❌ Error checking username:", error);
+      setUsernameAvailable(null);
     } finally {
       setCheckingUsername(false);
     }
@@ -151,8 +162,18 @@ export default function Onboarding() {
 
         return () => clearTimeout(timeoutId);
       }
+    } else if (key === "bio") {
+      // Limit bio to 500 characters
+      const limitedValue = value.slice(0, 500);
+      setFormData((prev) => ({ ...prev, [key]: limitedValue }));
+      if (errors.bio) {
+        setErrors((prev) => ({ ...prev, bio: "" }));
+      }
     } else {
       setFormData((prev) => ({ ...prev, [key]: value }));
+      if (errors[key]) {
+        setErrors((prev) => ({ ...prev, [key]: "" }));
+      }
     }
   };
 
@@ -183,35 +204,84 @@ export default function Onboarding() {
     reader.readAsDataURL(file);
   };
 
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    // Validate Username
+    const cleanedUsername = slugifyUsername(formData.username);
+    if (!cleanedUsername || cleanedUsername.length < 3) {
+      newErrors.username = "Username must be at least 3 characters";
+    }
+
+    // Validate Full Name
+    if (!formData.full_name.trim()) {
+      newErrors.full_name = "Full name is required";
+    } else if (formData.full_name.trim().length < 2) {
+      newErrors.full_name = "Full name must be at least 2 characters";
+    }
+
+    // Validate Bio (MANDATORY)
+    if (!formData.bio.trim()) {
+      newErrors.bio = "Bio is required";
+    } else if (formData.bio.trim().length < 10) {
+      newErrors.bio = "Bio must be at least 10 characters";
+    }
+
+    // Validate URL format if link is provided (optional field)
+    if (formData.link.trim()) {
+      try {
+        new URL(formData.link);
+      } catch {
+        newErrors.link = "Please enter a valid URL (e.g., https://example.com)";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitting(true);
+    
+    console.log("🚀 Starting form submission...");
+    
+    // Clear previous errors
     setErrors({});
 
+    // Validate form
+    if (!validateForm()) {
+      console.log("❌ Form validation failed");
+      return;
+    }
+
+    // Check username availability
+    if (usernameAvailable === false) {
+      setErrors({ username: "Username is already taken" });
+      console.log("❌ Username not available");
+      return;
+    }
+
+    setSubmitting(true);
+
     try {
+      // Get current user
       const {
         data: { user },
       } = await supabase.auth.getUser();
 
       if (!user) {
+        console.log("❌ No user found during submission");
+        setErrors({ _form: "Session expired. Please login again." });
+        setSubmitting(false);
         router.push("/");
         return;
       }
 
+      console.log("✅ User authenticated:", user.id);
+
       const cleanedUsername = slugifyUsername(formData.username);
 
-      if (!cleanedUsername) {
-        setErrors({ username: "Username is required" });
-        setSubmitting(false);
-        return;
-      }
-
-      if (!formData.full_name.trim()) {
-        setErrors({ full_name: "Full name is required" });
-        setSubmitting(false);
-        return;
-      }
-
+      // Double-check username availability
       const { data: existing } = await supabase
         .from("profiles")
         .select("id")
@@ -219,6 +289,7 @@ export default function Onboarding() {
         .maybeSingle();
 
       if (existing && existing.id !== user.id) {
+        console.log("❌ Username already taken:", cleanedUsername);
         setErrors({ username: "Username already taken" });
         setSubmitting(false);
         return;
@@ -227,42 +298,76 @@ export default function Onboarding() {
       // Upload avatar if selected
       let avatar_url = profile?.avatar_url || "/default-avatar.webp";
       if (avatarFile) {
+        console.log("📤 Uploading avatar...");
+        const fileName = `${user.id}_${Date.now()}.webp`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("avatars")
-          .upload(`avatars/${user.id}.webp`, avatarFile, { upsert: true });
+          .upload(`avatars/${fileName}`, avatarFile, { upsert: true });
 
         if (uploadError) {
-          console.error("Avatar upload error:", uploadError);
-          setErrors({ avatar: "Failed to upload avatar" });
+          console.error("❌ Avatar upload error:", uploadError);
+          setErrors({ avatar: "Failed to upload avatar. Please try again." });
           setSubmitting(false);
           return;
         }
 
         const { data: publicData } = supabase.storage
           .from("avatars")
-          .getPublicUrl(`avatars/${user.id}.webp`);
+          .getPublicUrl(`avatars/${fileName}`);
 
         avatar_url = publicData.publicUrl;
+        console.log("✅ Avatar uploaded:", avatar_url);
       }
 
-      const { error } = await supabase.from("profiles").upsert({
+      // Prepare profile data
+      const profileData = {
         id: user.id,
-        ...formData,
         username: cleanedUsername,
+        full_name: formData.full_name.trim(),
+        bio: formData.bio.trim(),
+        location: formData.location.trim() || null,
+        profession: formData.profession.trim() || null,
+        link: formData.link.trim() || null,
         avatar_url,
         email: user.email,
-      });
+        updated_at: new Date().toISOString(),
+      };
 
-      if (!error) {
-        router.push("/");
-      } else {
-        console.error("Profile update error:", error);
-        setErrors({ _form: "Failed to complete profile: " + error.message });
+      console.log("💾 Saving profile data:", profileData);
+
+      // Update profile
+      const { data: updatedProfile, error: updateError } = await supabase
+        .from("profiles")
+        .upsert(profileData, { onConflict: 'id' })
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error("❌ Profile update error:", updateError);
+        setErrors({ 
+          _form: `Failed to save profile: ${updateError.message}` 
+        });
+        setSubmitting(false);
+        return;
       }
-    } catch (error) {
-      console.error("Unexpected error:", error);
-      setErrors({ _form: "An unexpected error occurred" });
-    } finally {
+
+      console.log("✅ Profile saved successfully:", updatedProfile);
+
+      // Show success popup
+      setShowSuccessPopup(true);
+
+      // Wait 2 seconds then redirect
+      setTimeout(() => {
+        console.log("🔄 Redirecting to home...");
+        router.push("/");
+        router.refresh(); // Force refresh the page
+      }, 2000);
+
+    } catch (error: any) {
+      console.error("❌ Unexpected error during submission:", error);
+      setErrors({ 
+        _form: `An unexpected error occurred: ${error.message || 'Please try again'}` 
+      });
       setSubmitting(false);
     }
   };
@@ -280,6 +385,25 @@ export default function Onboarding() {
 
   return (
     <div className={styles.container}>
+      {/* Success Popup */}
+      {showSuccessPopup && (
+        <div className={styles.successPopup}>
+          <div className={styles.successPopupContent}>
+            <div className={styles.successIcon}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22,4 12,14.01 9,11.01"></polyline>
+              </svg>
+            </div>
+            <h2 className={styles.successTitle}>Profile Completed!</h2>
+            <p className={styles.successMessage}>
+              Your profile has been saved successfully. Redirecting to home...
+            </p>
+            <div className={styles.successSpinner}></div>
+          </div>
+        </div>
+      )}
+
       <div className={styles.card}>
         <div className={styles.header}>
           <div className={styles.headerIcon}>
@@ -374,7 +498,7 @@ export default function Onboarding() {
                     value={formData.username}
                     onChange={(e) => onChange("username", e.target.value)}
                     className={`${styles.input} ${styles.inputWithPrefix} ${
-                      usernameInputError ? styles.inputError : ""
+                      usernameInputError || errors.username ? styles.inputError : ""
                     }`}
                   />
                 </div>
@@ -440,7 +564,7 @@ export default function Onboarding() {
                   required
                   value={formData.full_name}
                   onChange={(e) => onChange("full_name", e.target.value)}
-                  className={styles.input}
+                  className={`${styles.input} ${errors.full_name ? styles.inputError : ""}`}
                 />
                 {errors.full_name && (
                   <p className={styles.errorText}>
@@ -450,26 +574,34 @@ export default function Onboarding() {
               </div>
             </div>
 
-            {/* Bio */}
+            {/* Bio - MANDATORY */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>
-                Bio
+                Bio *
               </label>
               <textarea
-                placeholder="Tell us about yourself, your interests, or what you're passionate about..."
+                placeholder="Tell us about yourself, your interests, or what you're passionate about... (minimum 10 characters)"
                 value={formData.bio}
                 onChange={(e) => onChange("bio", e.target.value)}
-                className={styles.textarea}
+                required
+                className={`${styles.textarea} ${errors.bio ? styles.inputError : ""}`}
                 rows={4}
               />
-              <p className={styles.helpText}>
-                {formData.bio.length}/500 characters
-              </p>
+              <div className={styles.bioFooter}>
+                <p className={styles.helpText}>
+                  {formData.bio.length}/500 characters
+                </p>
+                {errors.bio && (
+                  <p className={styles.errorText}>
+                    {errors.bio}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
 
           <div className={styles.formSection}>
-            <h2 className={styles.sectionTitle}>Additional Information</h2>
+            <h2 className={styles.sectionTitle}>Additional Information (Optional)</h2>
             
             <div className={styles.fieldRow}>
               {/* Location */}
@@ -501,18 +633,23 @@ export default function Onboarding() {
               </div>
             </div>
 
-            {/* Website */}
+            {/* Website - Optional */}
             <div className={styles.fieldGroup}>
               <label className={styles.label}>
-                Website
+                Website (Optional)
               </label>
               <input
                 type="url"
                 placeholder="https://your-website.com"
                 value={formData.link}
                 onChange={(e) => onChange("link", e.target.value)}
-                className={styles.input}
+                className={`${styles.input} ${errors.link ? styles.inputError : ""}`}
               />
+              {errors.link && (
+                <p className={styles.errorText}>
+                  {errors.link}
+                </p>
+              )}
             </div>
           </div>
 
@@ -520,13 +657,13 @@ export default function Onboarding() {
           <div className={styles.submitSection}>
             <button
               type="submit"
-              disabled={submitting || usernameAvailable === false}
+              disabled={submitting || usernameAvailable === false || checkingUsername}
               className={styles.submitButton}
             >
               {submitting ? (
                 <>
                   <div className={styles.buttonSpinner}></div>
-                  Creating Profile...
+                  Saving Profile...
                 </>
               ) : (
                 <>
@@ -539,7 +676,7 @@ export default function Onboarding() {
               )}
             </button>
             <p className={styles.submitHelpText}>
-              You can always update this information later in your profile settings
+              * Required fields • You can update your information later in profile settings
             </p>
           </div>
         </form>
