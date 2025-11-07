@@ -334,7 +334,6 @@ export default function Onboarding() {
 
       console.log("💾 Saving profile data:", profileData);
 
-      // Update profile
       const { data: updatedProfile, error: updateError } = await supabase
         .from("profiles")
         .upsert(profileData, { onConflict: 'id' })
@@ -352,15 +351,10 @@ export default function Onboarding() {
 
       console.log("✅ Profile saved successfully:", updatedProfile);
 
-      // Show success popup
       setShowSuccessPopup(true);
 
-      // Wait 2 seconds then redirect
-      setTimeout(() => {
-        console.log("🔄 Redirecting to home...");
-        router.push("/");
-        router.refresh(); // Force refresh the page
-      }, 2000);
+      router.push("/");
+      router.refresh();
 
     } catch (error: any) {
       console.error("❌ Unexpected error during submission:", error);
