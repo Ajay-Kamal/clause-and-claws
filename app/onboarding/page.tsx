@@ -353,8 +353,9 @@ export default function Onboarding() {
 
       setShowSuccessPopup(true);
 
-      router.push("/");
-      router.refresh();
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 3000);
 
     } catch (error: any) {
       console.error("❌ Unexpected error during submission:", error);
