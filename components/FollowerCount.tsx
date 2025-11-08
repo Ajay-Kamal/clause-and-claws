@@ -59,9 +59,31 @@ export default function FollowerCount({ profileId }: Props) {
     };
   }, [profileId]);
 
-  if (loading) {
-    return <div className="text-lg font-semibold">0</div>;
+if (loading) {
+    return (
+      <div style={{ 
+        fontSize: '1.5rem', 
+        fontWeight: '700', 
+        color: '#2C3E50', 
+        lineHeight: '1', 
+        marginBottom: '0.35rem', 
+        fontFamily: 'Arial, Helvetica, sans-serif' 
+      }}>
+        0
+      </div>
+    );
   }
 
-  return <div className="text-lg font-semibold">{count}</div>;
+  return (
+    <div style={{ 
+      fontSize: '1.5rem', 
+      fontWeight: '700', 
+      color: '#2C3E50', 
+      lineHeight: '1', 
+      marginBottom: '0.35rem', 
+      fontFamily: 'Arial, Helvetica, sans-serif' 
+    }}>
+      {count}
+    </div>
+  );
 }

@@ -5,7 +5,7 @@ export async function getArticleBySlug(slug: string) {
     .from("articles")
     .select(
       `
-      id, title, abstract, tags, views, likes, file_url, watermarked_pdf_url, created_at,
+      id, title, abstract, tags, views, likes, file_url,type, watermarked_pdf_url, created_at,
       profiles (
         full_name,
         username,

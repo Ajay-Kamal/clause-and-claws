@@ -107,7 +107,6 @@ export default async function AuthorProfile({
                 {/* Follow + menu buttons */}
                 <div className={styles.profileActions}>
                   <FollowButton profileId={profile.id} />
-                  <button className={styles.menuButton}>⋯</button>
                 </div>
               </div>
 

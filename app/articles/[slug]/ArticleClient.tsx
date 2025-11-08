@@ -143,6 +143,7 @@ export default function ArticleClient({ article }: { article: Article }) {
   } = article;
 
   console.log("Article data in client:", article);
+  console.log(article.type);
   
   const [likeCount, setLikeCount] = useState(likes);
   const [viewCount, setViewCount] = useState(views);
@@ -337,13 +338,38 @@ export default function ArticleClient({ article }: { article: Article }) {
             </div>
           )}
 
-          {/* PDF Viewer */}
+          {/* PDF Viewer - Conditional rendering based on type */}
           {watermarked_pdf_url && (
             <div className={styles.pdfSection}>
               <h2 className={styles.sectionHeading}>Full Document</h2>
-              <div className={styles.pdfViewerWrapper}>
-                <FileViewer fileUrl={watermarked_pdf_url} title={title} backgroundColor="#f5f1e8"/>
-              </div>
+              {type === "Article" ? (
+                <div className={styles.pdfViewerWrapper}>
+                  <FileViewer fileUrl={watermarked_pdf_url} title={title} backgroundColor="#f5f1e8"/>
+                </div>
+              ) : (
+                <div style={{ 
+                  position: 'relative', 
+                  width: '100%', 
+                  paddingBottom: '141.4%', // A4 aspect ratio (1:1.414)
+                  height: 0,
+                  overflow: 'hidden'
+                }}>
+                  <iframe
+                    src={watermarked_pdf_url}
+                    title={title}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      border: 'none',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                </div>
+              )}
             </div>
           )}
         </article>

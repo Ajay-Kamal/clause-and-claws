@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { createBrowserClient } from "@supabase/ssr";
-import GoogleModal from "./GoogleModal";
 import styles from "../styles/FollowButton.module.css";
 
 interface FollowButtonProps {
@@ -18,8 +17,6 @@ export default function FollowButton({ profileId }: FollowButtonProps) {
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [signingIn, setSigningIn] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -30,7 +27,6 @@ export default function FollowButton({ profileId }: FollowButtonProps) {
       if (user) {
         setUserId(user.id);
         
-        // Don't let users follow themselves
         if (user.id !== profileId) {
           await checkIfFollowing(user.id);
         }
@@ -42,7 +38,7 @@ export default function FollowButton({ profileId }: FollowButtonProps) {
 
   const checkIfFollowing = async (currentUserId: string) => {
     const { data, error } = await supabase
-      .from("follows") // ✅ Changed from "followers" to "follows"
+      .from("follows")
       .select("*")
       .eq("follower_id", currentUserId)
       .eq("following_id", profileId)
@@ -58,11 +54,10 @@ export default function FollowButton({ profileId }: FollowButtonProps) {
 
   const toggleFollow = async () => {
     if (!userId) {
-      setShowModal(true);
+      alert("Please sign in to follow this author!");
       return;
     }
 
-    // Prevent following yourself
     if (userId === profileId) {
       return;
     }
@@ -71,9 +66,8 @@ export default function FollowButton({ profileId }: FollowButtonProps) {
 
     try {
       if (isFollowing) {
-        // Unfollow
         const { error } = await supabase
-          .from("follows") // ✅ Changed from "followers" to "follows"
+          .from("follows")
           .delete()
           .eq("follower_id", userId)
           .eq("following_id", profileId);
@@ -81,7 +75,6 @@ export default function FollowButton({ profileId }: FollowButtonProps) {
         if (error) throw error;
         setIsFollowing(false);
       } else {
-        // Follow
         const { error } = await supabase.from("follows").insert({
           follower_id: userId,
           following_id: profileId,
@@ -92,24 +85,12 @@ export default function FollowButton({ profileId }: FollowButtonProps) {
       }
     } catch (error) {
       console.error("Error toggling follow:", error);
+      alert("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSignIn = async () => {
-    setSigningIn(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    if (error) console.error("Google sign-in error:", error);
-    setSigningIn(false);
-  };
-
-  // Don't show follow button if viewing your own profile
   if (userId && userId === profileId) {
     return null;
   }
@@ -123,24 +104,14 @@ export default function FollowButton({ profileId }: FollowButtonProps) {
   }
 
   return (
-    <>
-      <button
-        onClick={toggleFollow}
-        disabled={loading}
-        className={`${styles.followBtn} ${
-          isFollowing ? styles.following : styles.notFollowing
-        }`}
-      >
-        {isFollowing ? "Following" : "Follow"}
-      </button>
-
-      <GoogleModal
-        showModal={showModal}
-        onClose={() => setShowModal(false)}
-        onSignIn={handleSignIn}
-        isLoading={signingIn}
-        redirectPath={window.location.pathname}
-      />
-    </>
+    <button
+      onClick={toggleFollow}
+      disabled={loading}
+      className={`${styles.followBtn} ${
+        isFollowing ? styles.following : styles.notFollowing
+      }`}
+    >
+      {isFollowing ? "Following" : "Follow"}
+    </button>
   );
 }

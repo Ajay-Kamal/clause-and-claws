@@ -46,7 +46,6 @@ export default function NavBar() {
     })();
   }, []);
 
-
   const isActive = (href: string) =>
     `${styles["nav-link"]} ${pathname === href ? styles.active : ""}`;
 
@@ -140,7 +139,6 @@ export default function NavBar() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-
       if (event === "SIGNED_IN" && session?.user) {
         setUser(session.user);
         setShowGoogleModal(false);
@@ -325,17 +323,17 @@ export default function NavBar() {
 
           <div className={styles["nav-desktop"]}>
             <div className={styles["nav-links"]}>
-            {navLinks.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`${styles.navLink} ${
-                  pathname === link.href ? styles.active : ""
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`${styles.navLink} ${
+                    pathname === link.href ? styles.active : ""
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
             </div>
             {isAdmin ? (
               <Link
@@ -409,7 +407,9 @@ export default function NavBar() {
                     onMouseLeave={() => setProfileDropdownOpen(false)}
                   >
                     <Link
-                      href={'/authors/' + (profileUsername ? profileUsername : '')}
+                      href={
+                        "/authors/" + (profileUsername ? profileUsername : "")
+                      }
                       className={styles["profile-dropdown-item"]}
                       onClick={() => setProfileDropdownOpen(false)}
                     >
@@ -428,7 +428,26 @@ export default function NavBar() {
                       </svg>
                       My Profile
                     </Link>
-
+                    <Link
+                      href={"/edit-profile"}
+                      className={styles["profile-dropdown-item"]}
+                      onClick={() => setProfileDropdownOpen(false)}
+                    >
+                      <svg
+                        className={styles["dropdown-icon"]}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                      Edit Profile
+                    </Link>
                     <button
                       onClick={handleSignOut}
                       disabled={actionLoading}
