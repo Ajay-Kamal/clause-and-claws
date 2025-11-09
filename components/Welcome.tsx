@@ -64,17 +64,12 @@ export default function Welcome() {
           </div>
         </div>
         <div className={styles.welcomeText}>
-          <h1>
-            Where Clauses <br />
-            Speak,
-          </h1>
-          <h1>
-            and Claws Create <br />
-            Change
-          </h1>
+          <h1>Where Clauses Speak,</h1>
+          <h1>and Claws Create Change</h1>
           <p>
-            Cutting-edge legal scholarship for law students and <br />
-            professionals. Research, analysis and discourse on <br /> contemporary legal issues.
+            Cutting-edge legal scholarship for law students and 
+            professionals. Research, analysis and discourse on 
+            contemporary legal issues.
           </p>
           <div className={styles["btn-section"]}>
             <Link href="/articles" className={styles["btn-primary"]}>

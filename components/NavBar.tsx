@@ -519,7 +519,7 @@ export default function NavBar() {
             >
               <svg
                 className={
-                  mobileMenuOpen
+                  !mobileMenuOpen
                     ? styles["menu-icon"] + " " + styles.open
                     : styles["menu-icon"] + " " + styles.hidden
                 }
@@ -537,7 +537,7 @@ export default function NavBar() {
               </svg>
               <svg
                 className={
-                  !mobileMenuOpen
+                  mobileMenuOpen
                     ? styles["menu-icon"] + " " + styles.open
                     : styles["menu-icon"] + " " + styles.hidden
                 }

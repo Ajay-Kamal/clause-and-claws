@@ -15,6 +15,7 @@
   margin: 0 auto;
   height: calc(100% - 40px);
   flex-grow: 1;
+  width: 100%; /* ADDED from old */
 }
 
 .navbar-inner {
@@ -56,10 +57,8 @@
   display: inline-flex;
   align-items: center;
   gap: 1rem;
-  display: flex;
   padding: 6px 16px;
   justify-content: center;
-  align-items: center;
   border-radius: 10px;
 }
 
@@ -82,8 +81,22 @@
   display: flex;
   align-items: center;
   font-size: 1rem;
-  color: var(--text-color);
+  color: black; /* Changed from var(--text-color) to match old */
   cursor: pointer;
+  padding: 6px 16px; /* ADDED from old */
+  border-radius: 10px; /* ADDED from old */
+  transition: background 0.2s; /* ADDED from old */
+}
+
+.nav-dropdown button:hover {
+  background: #e7e7e7; /* ADDED from old */
+}
+
+/* Upload button active / highlighted state - FROM OLD */
+.nav-dropdown button.active,
+.nav-dropdown .active {
+  background: rgb(9, 30, 57);
+  color: #ffffff;
 }
 
 .chevron {
@@ -92,6 +105,7 @@
   margin-left: 0.25rem;
   transition: transform 0.2s;
 }
+
 .chevron.rotated {
   transform: rotate(180deg);
 }
@@ -115,14 +129,15 @@
 .dropdown-item {
   padding: 0.5rem 1rem;
   text-decoration: none;
-  color: var(--text-color);
+  color: black; /* Changed from var(--text-color) */
   font-size: 0.95rem;
   transition: background 0.2s;
 }
+
 .dropdown-item:hover,
 .dropdown-item.active {
   background: rgba(0, 0, 0, 0.05);
-  color: var(--buttons-color);
+  color: rgb(9, 30, 57); /* Changed from var(--buttons-color) */
   font-weight: 600;
 }
 
@@ -136,7 +151,7 @@
 .user-avatar {
   width: 32px;
   height: 32px;
-  background: var(--buttons-color);
+  background: rgb(9, 30, 57); /* Changed from var(--buttons-color) */
   color: #fff;
   border-radius: 50%;
   display: flex;
@@ -144,9 +159,14 @@
   align-items: center;
 }
 
+.avatar-icon { /* ADDED from old */
+  width: 20px;
+  height: 20px;
+}
+
 .user-email {
   font-size: 0.9rem;
-  color: var(--text-color);
+  color: black; /* Changed from var(--text-color) */
 }
 
 /* ====== Auth Buttons ====== */
@@ -198,12 +218,17 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
-  display: inline-block;
 }
 
 .profile-btn:hover {
   border-color: #000000;
   box-shadow: 0 4px 16px rgba(68, 72, 89, 0.15);
+}
+
+.user-name { /* ADDED from old */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profile-dropdown-menu {
@@ -232,7 +257,9 @@
   color: #444859;
   cursor: pointer;
   transition: background-color 0.2s;
+  text-decoration: none; /* ADDED from old */
 }
+
 .profile-dropdown-item:hover {
   background: #f5f5f5;
 }
@@ -246,57 +273,257 @@
   background: none;
   border: none;
   cursor: pointer;
+  padding: 0.5rem; /* ADDED from old */
+  position: relative; /* ADDED from old */
+  width: 40px; /* ADDED from old */
+  height: 40px; /* ADDED from old */
+  display: flex; /* ADDED from old */
+  align-items: center; /* ADDED from old */
+  justify-content: center; /* ADDED from old */
 }
 
 .menu-icon {
-  width: 24px;
-  height: 24px;
-  stroke: var(--text-color);
+  width: 28px; /* Changed from 24px */
+  height: 28px; /* Changed from 24px */
+  stroke: black; /* Changed from var(--text-color) */
+  transition: opacity 0.2s; /* ADDED from old */
 }
 
 .menu-icon.open {
-  display: none;
+  display: block; /* Changed from none */
 }
 
 .menu-icon.hidden {
-  display: block;
+  display: none; /* Changed from block */
+}
+
+/* Animated Hamburger Icon - FROM OLD */
+.hamburger-icon {
+  width: 28px;
+  height: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hamburger-line {
+  width: 100%;
+  height: 3px;
+  background-color: black;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.btn-menu.active .hamburger-line:nth-child(1) {
+  transform: translateY(8.5px) rotate(45deg);
+}
+
+.btn-menu.active .hamburger-line:nth-child(2) {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.btn-menu.active .hamburger-line:nth-child(3) {
+  transform: translateY(-8.5px) rotate(-45deg);
 }
 
 .mobile-menu {
   display: none;
+  overflow: hidden; /* ADDED from old */
+  max-height: 0; /* ADDED from old */
+  transition: max-height 0.3s ease-in-out; /* ADDED from old */
 }
 
 .mobile-menu.open {
   display: block;
-  background: var(--bg-color);
+  background: rgb(255, 255, 240); /* Changed from var(--bg-color) */
   border-top: 1px solid #ccc;
+  max-height: 600px; /* ADDED from old */
 }
 
-.mobile-menu.hidden {
+.mobile-menu.hidden { /* REMOVED - not needed with display: none default */
   display: none;
 }
 
 .mobile-inner {
   display: flex;
   flex-direction: column;
-  padding: 1rem;
-  gap: 1rem;
+  padding: 1rem 30px; /* Changed from just 1rem */
+  gap: 0.5rem; /* Changed from 1rem */
+}
+
+.mobile-inner > div > button {
+  background: #faf7e6;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: black;
+  font-size: 1rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  border: none;
+  cursor: pointer;
+}
+
+.mobile-inner .nav-link { /* ADDED from old */
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  color: black;
+  font-size: 1rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+  display: block;
+}
+
+.mobile-inner .nav-link:hover { /* ADDED from old */
+  background: #F1E7D0;
+}
+
+.mobile-inner .nav-link.active { /* ADDED from old */
+  font-weight: 700;
+  background: #F1E7D0;
 }
 
 .mobile-dropdown {
   display: flex;
   flex-direction: column;
   margin-left: 1rem;
+  margin-top: 0.25rem; /* ADDED from old */
+  gap: 0.25rem; /* ADDED from old */
+}
+
+.mobile-dropdown .dropdown-item { /* ADDED from old */
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: black;
+  font-size: 0.95rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+  display: block;
+}
+
+.mobile-dropdown .dropdown-item:hover { /* ADDED from old */
+  background: #e7e7e7;
+}
+
+.mobile-dropdown .dropdown-item.active { /* ADDED from old */
+  background: rgba(0, 0, 0, 0.05);
+  color: rgb(9, 30, 57);
+  font-weight: 600;
+}
+
+/* ====== Mobile Auth Section ====== - FROM OLD */
+.mobile-auth {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #ddd;
+}
+
+.auth-loading {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.mobile-profile {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-profile-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.mobile-profile-btn:hover {
+  background: #e7e7e7;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mobile-profile-dropdown {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.25rem;
+  padding-left: 1rem;
+  gap: 0.25rem;
+}
+
+.btn-signin.mobile {
+  width: 100%;
+  justify-content: center;
 }
 
 /* ====== Responsive ====== */
 @media (max-width: 1000px) {
+  .navbar { /* ADDED from old */
+    height: auto;
+    min-height: 80px;
+  }
+
+  .navbar-container { /* ADDED from old */
+    height: auto;
+  }
+
+  .navbar-inner { /* ADDED from old */
+    padding: 0 20px;
+    min-height: 80px;
+  }
+
+  .logo img { /* ADDED from old */
+    height: 40px;
+  }
+
   .nav-desktop,
   .auth-desktop {
     display: none;
   }
+
   .mobile-toggle {
     display: block;
+  }
+}
+
+@media (max-width: 480px) { /* ADDED from old */
+  .navbar-inner {
+    padding: 0 15px;
+    margin-bottom: 0rem;
+  }
+
+  .logo img {
+    height: 35px;
+  }
+
+  .profile-btn {
+    max-width: 120px;
+    width: 120px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .btn-signin {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
   }
 }
 
@@ -305,7 +532,9 @@
   width: 20px;
   height: 20px;
   animation: spin 1s linear infinite;
+  margin-right: 0.5rem; /* ADDED from new */
 }
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -331,6 +560,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1rem; /* ADDED from old */
 }
 
 .modalContent {
@@ -370,6 +600,11 @@
   align-items: center;
 }
 
+.modalCloseBtn svg { /* ADDED from old */
+  width: 24px;
+  height: 24px;
+}
+
 .modalCloseBtn:hover {
   background: #f5f5f5;
 }
@@ -389,6 +624,7 @@
 .modalGoogleBtn {
   display: flex;
   align-items: center;
+  justify-content: center; /* ADDED from old */
   gap: 0.75rem;
   background: rgb(9, 30, 57);
   color: #fff;
@@ -419,14 +655,21 @@
   flex-shrink: 0;
 }
 
-.spinner {
-  width: 20px;
-  height: 20px;
-  animation: spin 1s linear infinite;
-  margin-right: 0.5rem;
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
+@media (max-width: 480px) {
+  .modalContent {
+    padding: 1.5rem 1rem;
+  }
+
+  .modalHeader h2 {
+    font-size: 1.25rem;
+  }
+
+  .modalBody p {
+    font-size: 0.9rem;
+  }
+
+  .modalGoogleBtn {
+    font-size: 0.9rem;
+    padding: 0.65rem 1rem;
   }
 }

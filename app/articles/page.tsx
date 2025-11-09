@@ -210,7 +210,7 @@ const ResearchPapersPage: React.FC = () => {
       <section className={styles.topLatestSection}>
         <div className={styles.topLatestGrid}>
           <div className={styles.topLatestColumnRP}>
-            <h2 className={styles.topLatestTitle}>Research papers</h2>
+            <h2 className={styles.topLatestTitle}>Research Papers</h2>
             <div className={styles.topLatestList}>
               {latestRP.length > 0 ? (
                 latestRP.map((article) => (
@@ -228,7 +228,7 @@ const ResearchPapersPage: React.FC = () => {
                   </a>
                 ))
               ) : (
-                <p className={styles.noResults}>No research papers found</p>
+                <p className={styles.noResults}>No Research Papers found</p>
               )}
             </div>
           </div>
@@ -636,7 +636,7 @@ const ResearchPapersPage: React.FC = () => {
 
             {/* Research Papers - Standard Style */}
             <FeaturedStandardSection
-              title="Research papers"
+              title="Research Papers"
               articles={featuredResearchPapers}
               moreLink="/articles/type/research-paper"
             />

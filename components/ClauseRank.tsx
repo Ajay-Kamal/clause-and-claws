@@ -109,7 +109,7 @@ const ClauseRank: React.FC = () => {
   return (
     <section className={styles.clauseRankSection}>
       <div className={styles.container}>
-        <h2 className={styles.sectionTitle}>ClauseRank™ Trending Topics</h2>
+        <h2 className={styles.sectionTitle}>Clause&Claws™</h2>
         <p className={styles.sectionSubtitle}>
           Real-time analysis of the most discussed legal topics based on citations, reads,
           and research momentum.
