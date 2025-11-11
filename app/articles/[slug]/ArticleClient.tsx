@@ -68,6 +68,7 @@ interface Article {
   views?: number;
   slug?: string;
   likes?: number;
+  citations?: number;
   file_url?: string;
   watermarked_pdf_url?: string;
   thumbnail_url?: string;
@@ -81,6 +82,15 @@ interface Article {
     profession?: string;
     avatar_url?: string;
   } | null;
+  accepted_coauthors?: Array<{
+    coauthor: {
+      id: string;
+      username: string;
+      full_name: string | null;
+      avatar_url: string;
+      profession?: string | null;
+    };
+  }>;
 }
 
 const EyeIcon = () => (
@@ -127,6 +137,20 @@ const ShareIcon = () => (
   </svg>
 );
 
+const QuoteIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+  >
+    <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" />
+    <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" />
+  </svg>
+);
+
 export default function ArticleClient({ article }: { article: Article }) {
   const {
     id,
@@ -135,6 +159,7 @@ export default function ArticleClient({ article }: { article: Article }) {
     tags = [],
     views = 0,
     likes = 0,
+    citations = 0,
     watermarked_pdf_url,
     thumbnail_url,
     created_at,
@@ -142,12 +167,15 @@ export default function ArticleClient({ article }: { article: Article }) {
     profiles,
   } = article;
 
-  console.log("Article data in client:", article);
-  console.log(article.type);
-  
   const [likeCount, setLikeCount] = useState(likes);
   const [viewCount, setViewCount] = useState(views);
+  const [citationCount, setCitationCount] = useState(citations);
   const [liked, setLiked] = useState(false);
+  const [hasCited, setHasCited] = useState(false);
+  const [showCiteModal, setShowCiteModal] = useState(false);
+  const [citationUrl, setCitationUrl] = useState("");
+  const [citationTitle, setCitationTitle] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const checkLike = async () => {
@@ -166,7 +194,24 @@ export default function ArticleClient({ article }: { article: Article }) {
       if (data) setLiked(true);
     };
 
+    const checkCitation = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.user) return;
+
+      const { data } = await supabase
+        .from("citations")
+        .select("id")
+        .eq("article_id", id)
+        .eq("cited_by_user_id", session.user.id)
+        .maybeSingle();
+
+      if (data) setHasCited(true);
+    };
+
     checkLike();
+    checkCitation();
   }, [id]);
 
   useEffect(() => {
@@ -214,6 +259,84 @@ export default function ArticleClient({ article }: { article: Article }) {
     }
   };
 
+  const handleCiteClick = async () => {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session?.user) {
+      alert("Login required to cite this article.");
+      return;
+    }
+
+    if (hasCited) {
+      alert("You have already cited this article.");
+      return;
+    }
+
+    setShowCiteModal(true);
+  };
+
+  const handleCiteSubmit = async () => {
+    if (!citationUrl.trim()) {
+      alert("Please enter a citation URL.");
+      return;
+    }
+
+    // Basic URL validation
+    try {
+      new URL(citationUrl);
+    } catch {
+      alert("Please enter a valid URL.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.user) {
+        alert("Please login to cite this article.");
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("citations")
+        .insert({
+          article_id: id,
+          cited_by_user_id: session.user.id,
+          citation_url: citationUrl,
+          citation_title: citationTitle || null,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        if (error.code === "23505") {
+          alert("You have already cited this article.");
+        } else {
+          throw error;
+        }
+        return;
+      }
+
+      // Success
+      setCitationCount((prev) => prev + 1);
+      setHasCited(true);
+      setShowCiteModal(false);
+      setCitationUrl("");
+      setCitationTitle("");
+      alert("Citation added successfully!");
+    } catch (err) {
+      console.error("Citation error:", err);
+      alert("Failed to add citation. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleShare = async () => {
     if (navigator.share) {
       try {
@@ -237,13 +360,9 @@ export default function ArticleClient({ article }: { article: Article }) {
     <div className={styles.pageContainer}>
       <div className={styles.container}>
         <article className={styles.articleWrapper}>
-          {/* Type Badge */}
           <div className={styles.typeBadge}>{type}</div>
-
-          {/* Title */}
           <h1 className={styles.mainTitle}>{title}</h1>
 
-          {/* Author & Meta Info */}
           <div className={styles.authorMetaSection}>
             <div className={styles.authorInfoInline}>
               <Link
@@ -282,7 +401,40 @@ export default function ArticleClient({ article }: { article: Article }) {
             </div>
           </div>
 
-          {/* Stats & Actions */}
+          {article.accepted_coauthors && article.accepted_coauthors.length > 0 && (
+            <div className={styles.coauthorsSection}>
+              <h3 className={styles.coauthorsHeading}>Co-Authors</h3>
+              <div className={styles.coauthorsList}>
+                {article.accepted_coauthors.map((item: any) => {
+                  const coauthor = item.coauthor;
+                  return (
+                    <Link
+                      key={coauthor.id}
+                      href={`/authors/${coauthor.username}`}
+                      className={styles.coauthorCard}
+                    >
+                      <img
+                        src={coauthor.avatar_url || "/default-avatar.png"}
+                        alt={coauthor.full_name || coauthor.username}
+                        className={styles.coauthorAvatar}
+                      />
+                      <div className={styles.coauthorInfo}>
+                        <span className={styles.coauthorName}>
+                          {coauthor.full_name || coauthor.username}
+                        </span>
+                        {coauthor.profession && (
+                          <span className={styles.coauthorProfession}>
+                            {coauthor.profession}
+                          </span>
+                        )}
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className={styles.statsActionsBar}>
             <div className={styles.statsGroup}>
               <div className={styles.statItem}>
@@ -296,15 +448,28 @@ export default function ArticleClient({ article }: { article: Article }) {
                 <HeartIcon filled={liked} />
                 <span>{likeCount.toLocaleString()}</span>
               </div>
+              <div className={styles.statItem}>
+                <QuoteIcon />
+                <span>{citationCount.toLocaleString()} citations</span>
+              </div>
             </div>
 
-            <button className={styles.shareButton} onClick={handleShare}>
-              <ShareIcon />
-              <span>Share</span>
-            </button>
+            <div className={styles.actionButtons}>
+              <button 
+                className={`${styles.shareButton} ${hasCited ? styles.citedButton : ''}`}
+                onClick={handleCiteClick}
+                disabled={hasCited}
+              >
+                <QuoteIcon />
+                <span>{hasCited ? "Cited" : "Cite"}</span>
+              </button>
+              <button className={styles.shareButton} onClick={handleShare}>
+                <ShareIcon />
+                <span>Share</span>
+              </button>
+            </div>
           </div>
 
-          {/* Hero Image */}
           {thumbnail_url && (
             <div className={styles.heroImageContainer}>
               <img
@@ -315,7 +480,6 @@ export default function ArticleClient({ article }: { article: Article }) {
             </div>
           )}
 
-          {/* Abstract */}
           {abstract && (
             <div className={styles.abstractBox}>
               <h2 className={styles.abstractHeading}>Abstract</h2>
@@ -323,7 +487,6 @@ export default function ArticleClient({ article }: { article: Article }) {
             </div>
           )}
 
-          {/* Tags */}
           {renderTags(tags).length > 0 && (
             <div className={styles.tagsSection}>
               {renderTags(tags).map((tag) => (
@@ -338,7 +501,6 @@ export default function ArticleClient({ article }: { article: Article }) {
             </div>
           )}
 
-          {/* PDF Viewer - Conditional rendering based on type */}
           {watermarked_pdf_url && (
             <div className={styles.pdfSection}>
               <h2 className={styles.sectionHeading}>Full Document</h2>
@@ -350,7 +512,7 @@ export default function ArticleClient({ article }: { article: Article }) {
                 <div style={{ 
                   position: 'relative', 
                   width: '100%', 
-                  paddingBottom: '141.4%', // A4 aspect ratio (1:1.414)
+                  paddingBottom: '141.4%',
                   height: 0,
                   overflow: 'hidden'
                 }}>
@@ -374,6 +536,73 @@ export default function ArticleClient({ article }: { article: Article }) {
           )}
         </article>
       </div>
+
+      {/* Citation Modal */}
+      {showCiteModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowCiteModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h2 className={styles.modalTitle}>Cite This Article</h2>
+              <button 
+                className={styles.modalClose}
+                onClick={() => setShowCiteModal(false)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className={styles.citeForm}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Citation URL <span className={styles.required}>*</span>
+                </label>
+                <input
+                  type="url"
+                  className={styles.formInput}
+                  placeholder="https://example.com/your-article"
+                  value={citationUrl}
+                  onChange={(e) => setCitationUrl(e.target.value)}
+                />
+                <p className={styles.formHint}>
+                  Enter the URL where you cited this article (your published article or website)
+                </p>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>
+                  Title (Optional)
+                </label>
+                <input
+                  type="text"
+                  className={styles.formInput}
+                  placeholder="Title of your work"
+                  value={citationTitle}
+                  onChange={(e) => setCitationTitle(e.target.value)}
+                />
+              </div>
+
+              <div className={styles.modalActions}>
+                <button
+                  type="button"
+                  className={styles.cancelButton}
+                  onClick={() => setShowCiteModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className={styles.submitButton}
+                  onClick={handleCiteSubmit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Citation"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

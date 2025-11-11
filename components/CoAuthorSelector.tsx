@@ -1,5 +1,4 @@
-// Add this component to your project as a separate file: components/CoAuthorSelector.tsx
-
+// components/CoAuthorSelector.tsx - REPLACE ENTIRE FILE
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { createBrowserClient } from "@supabase/ssr";
@@ -23,6 +22,8 @@ interface CoAuthorSelectorProps {
   currentUserId: string;
 }
 
+const MAX_COAUTHORS = 3;
+
 export default function CoAuthorSelector({
   selectedCoAuthors,
   onCoAuthorsChange,
@@ -34,6 +35,8 @@ export default function CoAuthorSelector({
   const [showDropdown, setShowDropdown] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  const isMaxReached = selectedCoAuthors.length >= MAX_COAUTHORS;
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -49,7 +52,7 @@ export default function CoAuthorSelector({
 
   // Search for users by username
   const searchUsers = async (query: string) => {
-    if (!query.trim()) {
+    if (!query.trim() || isMaxReached) {
       setSearchResults([]);
       setShowDropdown(false);
       return;
@@ -61,12 +64,11 @@ export default function CoAuthorSelector({
         .from("profiles")
         .select("id, username, full_name, avatar_url")
         .ilike("username", `%${query}%`)
-        .neq("id", currentUserId) // Exclude current user
+        .neq("id", currentUserId)
         .limit(10);
 
       if (error) throw error;
 
-      // Filter out already selected co-authors
       const selectedIds = selectedCoAuthors.map((author) => author.id);
       const filteredResults = (data || []).filter(
         (profile) => !selectedIds.includes(profile.id)
@@ -97,9 +99,13 @@ export default function CoAuthorSelector({
         clearTimeout(debounceTimer.current);
       }
     };
-  }, [searchQuery]);
+  }, [searchQuery, selectedCoAuthors]);
 
   const handleAddCoAuthor = (profile: Profile) => {
+    if (isMaxReached) {
+      alert(`Maximum ${MAX_COAUTHORS} co-authors allowed`);
+      return;
+    }
     onCoAuthorsChange([...selectedCoAuthors, profile]);
     setSearchQuery("");
     setSearchResults([]);
@@ -112,9 +118,14 @@ export default function CoAuthorSelector({
 
   return (
     <div className={styles.container}>
-      <label className={styles.label}>Co-Authors (Optional)</label>
+      <div className={styles.headerRow}>
+        <label className={styles.label}>Co-Authors (Optional)</label>
+        <span className={`${styles.counter} ${isMaxReached ? styles.counterMax : ""}`}>
+          {selectedCoAuthors.length}/{MAX_COAUTHORS}
+        </span>
+      </div>
       <p className={styles.description}>
-        Search and add co-authors by their username
+        Search and add up to {MAX_COAUTHORS} co-authors by their username
       </p>
 
       <div className={styles.searchContainer} ref={searchRef}>
@@ -135,12 +146,17 @@ export default function CoAuthorSelector({
           <input
             type="text"
             className={styles.searchInput}
-            placeholder="Search by username..."
+            placeholder={
+              isMaxReached
+                ? "Maximum co-authors reached"
+                : "Search by username..."
+            }
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => {
-              if (searchResults.length > 0) setShowDropdown(true);
+              if (searchResults.length > 0 && !isMaxReached) setShowDropdown(true);
             }}
+            disabled={isMaxReached}
           />
           {isSearching && (
             <div className={styles.spinner}>
@@ -159,7 +175,7 @@ export default function CoAuthorSelector({
           )}
         </div>
 
-        {showDropdown && searchResults.length > 0 && (
+        {showDropdown && searchResults.length > 0 && !isMaxReached && (
           <div className={styles.dropdown}>
             {searchResults.map((profile) => (
               <button
@@ -197,21 +213,36 @@ export default function CoAuthorSelector({
           </div>
         )}
 
-        {showDropdown && searchQuery && !isSearching && searchResults.length === 0 && (
+        {showDropdown && searchQuery && !isSearching && searchResults.length === 0 && !isMaxReached && (
           <div className={styles.noResults}>
             <p>No users found matching "{searchQuery}"</p>
           </div>
         )}
       </div>
 
+      {isMaxReached && (
+        <div className={styles.warningBox}>
+          <svg className={styles.warningIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+            />
+          </svg>
+          <span>Maximum {MAX_COAUTHORS} co-authors reached. Remove one to add another.</span>
+        </div>
+      )}
+
       {selectedCoAuthors.length > 0 && (
         <div className={styles.selectedContainer}>
           <p className={styles.selectedLabel}>
-            Selected Co-Authors ({selectedCoAuthors.length})
+            Selected Co-Authors ({selectedCoAuthors.length}/{MAX_COAUTHORS})
           </p>
           <div className={styles.selectedList}>
-            {selectedCoAuthors.map((author) => (
+            {selectedCoAuthors.map((author, index) => (
               <div key={author.id} className={styles.selectedItem}>
+                <span className={styles.numberBadge}>{index + 1}</span>
                 <img
                   src={author.avatar_url}
                   alt={author.username}

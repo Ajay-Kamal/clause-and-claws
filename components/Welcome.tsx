@@ -85,7 +85,7 @@ export default function Welcome() {
         </div>
       </div>
       <div className={styles.associationSection}>
-        <div className={styles.associationSectionWrapper}>
+        {/* <div className={styles.associationSectionWrapper}>
           <header>IN ASSOCIATION WITH</header>
           <div className={styles.associations}>
             <div className={styles.association1}>
@@ -98,7 +98,8 @@ export default function Welcome() {
               <p>GOVERNMENT OF INDIA</p>
             </div>
           </div>
-        </div>
+        </div> */}
+        <header><b>100% FREE publishing for articles</b></header>
       </div>
     </div>
   );
