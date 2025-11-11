@@ -59,8 +59,8 @@ export default function NavBar() {
     { href: "/articles", label: "Publications" },
     { href: "/authors", label: "Authors" },
     { href: "/tags", label: "Categories" },
-    { href: "/about-us", label: "About Us" },
-  ];
+    { href: "/editorial-board", label: "Editorial Board" }, // ← CHANGED
+    ];
 
   const uploadOptions = [
     { href: "/upload", label: "Manuscript" },

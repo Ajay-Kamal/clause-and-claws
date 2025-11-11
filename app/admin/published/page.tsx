@@ -1,12 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createSupabaseBrowserClient } from "@/utils/supabase/browser";
+import { supabase } from "@/utils/supabase/client";
+import { adminFetch } from "@/utils/adminFetch";
 import styles from "../../../styles/PublishedPage.module.css";
+import type { Article } from "@/types";
+
+type PublishedArticle = Pick<Article, 'id' | 'title' | 'type' | 'created_at' | 'slug' | 'is_featured'> & {
+  profiles: {
+    username: string;
+    email?: string;
+  };
+};
 
 export default function PublishedPage() {
-  const supabase = createSupabaseBrowserClient();
-  const [articles, setArticles] = useState<any[]>([]);
+  const [articles, setArticles] = useState<PublishedArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,31 +23,42 @@ export default function PublishedPage() {
 
   async function fetchPublished() {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("articles")
-      .select("id, title, created_at, profiles(username,email), slug, is_featured")
+      .select("id, title, type, created_at, profiles(username, email), slug, is_featured")
       .eq("published", true)
-      .is("is_featured", false)
       .order("created_at", { ascending: false });
-    setArticles(data || []);
+    
+    if (error) {
+      console.error("Error fetching articles:", error);
+      setArticles([]);
+    } else {
+      setArticles((data as PublishedArticle[]) || []);
+    }
     setLoading(false);
   }
 
-  async function featureArticle(id: string) {
-    try {
-      const { error: updateErr } = await supabase
-        .from("articles")
-        .update({ is_featured: true })
-        .eq("id", id);
+  async function toggleFeatureArticle(id: string, currentStatus: boolean, title: string) {
+    const action = currentStatus ? "unfeature" : "feature";
+    
+    const result = await adminFetch(`/api/articles/${id}/feature`, {
+      method: "PUT",
+      body: { is_featured: !currentStatus },
+      confirm: {
+        title: `${action.charAt(0).toUpperCase() + action.slice(1)} Article`,
+        message: `Are you sure you want to ${action} "${title}"?`
+      }
+    });
 
-      if (updateErr) throw new Error(updateErr.message);
-      
-      // Refresh the list after featuring
-      fetchPublished();
-      alert("Article featured successfully!");
-    } catch (error) {
-      alert("Failed to feature article: " + (error as any)?.message);
+    if (result.cancelled) return;
+
+    if (result.error) {
+      alert(`Failed to ${action} article: ${result.error}`);
+      return;
     }
+
+    await fetchPublished();
+    alert(`Article ${action}d successfully!`);
   }
 
   if (loading) {
@@ -61,9 +80,17 @@ export default function PublishedPage() {
           {articles.map(a => (
             <div key={a.id} className={styles.articleCard}>
               <div className={styles.articleInfo}>
-                <h3 className={styles.articleTitle}>{a.title}</h3>
+                <h3 className={styles.articleTitle}>
+                  {a.title}
+                  {a.is_featured && (
+                    <span className={styles.featuredBadge}>★ Featured</span>
+                  )}
+                </h3>
                 <p className={styles.articleMeta}>
-                  Author: {a.profiles?.username}
+                  Author: {a.profiles?.username || 'Unknown'}
+                </p>
+                <p>
+                  publication type: {a.type}
                 </p>
               </div>
               
@@ -78,14 +105,10 @@ export default function PublishedPage() {
                 </a>
                 
                 <button 
-                  onClick={() => { 
-                    if (confirm("Feature article?")) {
-                      featureArticle(a.id);
-                    }
-                  }} 
-                  className={`${styles.button} ${styles.featureButton}`}
+                  onClick={() => toggleFeatureArticle(a.id, a.is_featured ?? false, a.title)} 
+                  className={`${styles.button} ${a.is_featured ? styles.unfeaturedButton : styles.featureButton}`}
                 >
-                  Feature Article
+                  {a.is_featured ? 'Unfeature Article' : 'Feature Article'}
                 </button>
               </div>
             </div>
