@@ -1,0 +1,138 @@
+.card {
+  background: rgb(47, 64, 87);
+  border-radius: 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+/* Avatar Section */
+.avatarSection {
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.avatarLink {
+  display: block;
+  position: relative;
+}
+
+.avatar,
+.avatarPlaceholder {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid rgb(241, 231, 208);
+  transition: transform 0.3s ease;
+  position: relative;
+  top: 40px;
+}
+
+.avatarLink:hover .avatar,
+.avatarLink:hover .avatarPlaceholder {
+  transform: scale(1.05);
+}
+
+.avatar {
+  object-fit: cover;
+}
+
+.avatarPlaceholder {
+  background: linear-gradient(135deg, #f4c430 0%, #daa520 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+/* Info Section */
+.info {
+  padding: 50px 24px 30px 24px;
+  background: rgb(241, 231, 208);
+  flex-grow: 1;
+  text-align: center;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.nameLink {
+  text-decoration: none;
+  color: inherit;
+  font-family: "Garamond", serif;
+}
+
+.name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+  transition: color 0.2s ease;
+}
+
+.nameLink:hover .name {
+  color: #daa520;
+}
+
+.role {
+  font-size: 1rem;
+  color: #daa520;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+  font-family: Arial, Helvetica, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.institution {
+  font-size: 0.95rem;
+  color: #555;
+  margin: 0;
+  font-weight: 500;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .avatar,
+  .avatarPlaceholder {
+    width: 100px;
+    height: 100px;
+    top: 30px;
+  }
+
+  .avatarPlaceholder {
+    font-size: 2rem;
+  }
+
+  .info {
+    padding: 40px 20px 24px 20px;
+    min-height: 140px;
+  }
+
+  .name {
+    font-size: 1.25rem;
+  }
+
+  .role {
+    font-size: 0.9rem;
+  }
+
+  .institution {
+    font-size: 0.875rem;
+  }
+}

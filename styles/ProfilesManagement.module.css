@@ -1,0 +1,289 @@
+.container {
+  padding: 2rem;
+  font-family: 'Open Sans', sans-serif;
+  background-color: var(--primary-bg);
+  min-height: 100vh;
+}
+
+.loading {
+  text-align: center;
+  padding: 3rem;
+  font-size: 1.125rem;
+  color: var(--secondary-font);
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.pageTitle {
+  font-family: 'Nunito', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--secondary-font);
+  margin-bottom: 1.5rem;
+}
+
+.searchContainer {
+  max-width: 500px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--button-color);
+  box-shadow: 0 0 0 3px rgba(0, 168, 230, 0.1);
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
+  font-size: 1.125rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.profilesList {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.profileCard {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.profileCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.profileAvatar {
+  flex-shrink: 0;
+}
+
+.profileAvatar img {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-color);
+}
+
+.avatarPlaceholder {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.25rem;
+  border: 2px solid var(--border-color);
+}
+
+.profileInfo {
+  flex: 1;
+}
+
+.profileName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--secondary-font);
+  margin: 0 0 0.25rem 0;
+}
+
+.profileUsername {
+  font-size: 0.95rem;
+  color: #666;
+  margin: 0 0 0.25rem 0;
+}
+
+.profileEmail {
+  font-size: 0.875rem;
+  color: #888;
+  margin: 0;
+}
+
+.editorBadge {
+  flex-shrink: 0;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: linear-gradient(135deg, #f4c430 0%, #daa520 100%);
+  color: #1a1a1a;
+  font-weight: 700;
+  font-size: 0.875rem;
+  border-radius: 20px;
+  box-shadow: 0 2px 8px rgba(244, 196, 48, 0.3);
+}
+
+.editorDetails {
+  background: #f9f9f9;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  color: var(--secondary-font);
+}
+
+.editorDetails p {
+  margin: 0.5rem 0;
+}
+
+.editorDetails strong {
+  color: #1a1a1a;
+}
+
+.editorForm {
+  background: #f0f7fb;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: 2px solid var(--button-color);
+}
+
+.editorForm h4 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--secondary-font);
+  margin: 0 0 1rem 0;
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--secondary-font);
+  margin-bottom: 0.5rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.input:focus {
+  outline: none;
+  border-color: var(--button-color);
+  box-shadow: 0 0 0 3px rgba(0, 168, 230, 0.1);
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.button {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.buttonPrimary {
+  background: var(--button-color);
+  color: white;
+}
+
+.buttonPrimary:hover {
+  background: #0096d1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 168, 230, 0.3);
+}
+
+.buttonSuccess {
+  background: #10b981;
+  color: white;
+}
+
+.buttonSuccess:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.buttonDanger {
+  background: #ef4444;
+  color: white;
+}
+
+.buttonDanger:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.buttonSecondary {
+  background: #6b7280;
+  color: white;
+}
+
+.buttonSecondary:hover {
+  background: #4b5563;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .pageTitle {
+    font-size: 1.5rem;
+  }
+
+  .profileHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .editorBadge {
+    align-self: flex-start;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+
+  .button {
+    width: 100%;
+  }
+}

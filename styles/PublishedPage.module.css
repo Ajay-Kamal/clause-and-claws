@@ -144,6 +144,33 @@
   box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
 }
 
+/* Featured badge */
+.featuredBadge {
+  display: inline-block;
+  margin-left: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  background-color: var(--feature-color);
+  color: var(--white);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 12px;
+  vertical-align: middle;
+}
+
+/* Unfeature button (when article is already featured) */
+.unfeaturedButton {
+  background-color: var(--feature-color);
+  color: var(--white);
+  border-color: var(--feature-color);
+}
+
+.unfeaturedButton:hover {
+  background-color: #d97706;
+  border-color: #d97706;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(217, 119, 6, 0.3);
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
   .container {
