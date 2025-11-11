@@ -1,11 +1,10 @@
 // In your article/[slug]/page.tsx SERVER COMPONENT
-// This is where you fetch the article data before passing to ArticleClient
 
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import ArticleClient from "./ArticleClient"; // Your client component
 
-export default async function ArticlePage({ params }: any ) {
+export default async function ArticlePage({ params }: any) {
   const { slug } = await params;
   const cookieStore = await cookies();
 
@@ -21,7 +20,7 @@ export default async function ArticlePage({ params }: any ) {
     }
   );
 
-  // ✅ UPDATED QUERY: Fetch article with ONLY accepted co-authors
+  // ✅ FIXED QUERY: Remove the !inner and the .eq filter on coauthors
   const { data: article, error } = await supabase
     .from("articles")
     .select(`
@@ -34,7 +33,7 @@ export default async function ArticlePage({ params }: any ) {
         bio,
         profession
       ),
-      accepted_coauthors:article_coauthors!inner(
+      accepted_coauthors:article_coauthors(
         coauthor:profiles!coauthor_id(
           id,
           username,
@@ -46,26 +45,53 @@ export default async function ArticlePage({ params }: any ) {
       )
     `)
     .eq("slug", slug)
-    .eq("article_coauthors.accepted", true) // ✅ Only accepted co-authors
-    .eq("published", true) // Only published articles
+    .eq("published", true)
+    .eq("article_coauthors.accepted", true) // Filter coauthors, not articles
     .single();
 
+  console.log("Fetched article:", article, "Error:", error);
+
   if (error || !article) {
+    console.error("Article fetch error:", error);
     return (
-      <div style={{ 
-        minHeight: "100vh", 
-        display: "flex", 
-        alignItems: "center", 
-        justifyContent: "center",
-        padding: "2rem"
-      }}>
-        <div style={{ textAlign: "center" }}>
-          <h1 style={{ fontSize: "2rem", fontWeight: "bold", marginBottom: "1rem" }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "2rem",
+          backgroundColor: "#F5F1E8",
+        }}
+      >
+        <div style={{ textAlign: "center", maxWidth: "600px" }}>
+          <h1
+            style={{
+              fontSize: "2rem",
+              fontWeight: "bold",
+              marginBottom: "1rem",
+              color: "#1E3A5F",
+            }}
+          >
             Article Not Found
           </h1>
-          <p style={{ color: "#6B7280" }}>
+          <p style={{ color: "#6B7280", marginBottom: "2rem" }}>
             The article you're looking for doesn't exist or has been removed.
           </p>
+          
+           <a href="/"
+            style={{
+              display: "inline-block",
+              padding: "0.75rem 1.5rem",
+              backgroundColor: "#1E3A5F",
+              color: "#FFFFFF",
+              borderRadius: "6px",
+              textDecoration: "none",
+              fontWeight: "500",
+            }}
+          >
+            Go Back Home
+          </a>
         </div>
       </div>
     );
