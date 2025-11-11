@@ -7,6 +7,7 @@ export type Article = {
   abstract: string | null;
   tags: string[] | null;
   filename: string;
+  citations?: number;
   file_url: string;
   views: number;
   likes: number;

@@ -158,6 +158,13 @@
   flex-shrink: 0;
 }
 
+/* Action Buttons */
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .shareButton {
   display: flex;
   align-items: center;
@@ -179,8 +186,24 @@
   border-color: #9CA3AF;
 }
 
+.shareButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .shareButton svg {
   flex-shrink: 0;
+}
+
+.citedButton {
+  background: #E0F2FE;
+  border-color: #3B82F6;
+  color: #1E40AF;
+}
+
+.citedButton:hover {
+  background: #E0F2FE;
+  border-color: #3B82F6;
 }
 
 /* Hero Image */
@@ -307,6 +330,278 @@
   border-radius: 8px;
 }
 
+/* Co-Authors Section */
+.coauthorsSection {
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+}
+
+.coauthorsHeading {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1E3A5F;
+  margin: 0 0 1.25rem 0;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.coauthorsHeading::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 20px;
+  background: #3B82F6;
+  border-radius: 2px;
+}
+
+.coauthorsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.coauthorCard {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 1rem;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.coauthorCard:hover {
+  background: #F3F4F6;
+  border-color: #3B82F6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.coauthorAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #3B82F6;
+  flex-shrink: 0;
+}
+
+.coauthorInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.coauthorName {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1E3A5F;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.coauthorProfession {
+  font-size: 0.8125rem;
+  color: #6B7280;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ✅ CITATION MODAL STYLES */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: #FFFFFF;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 560px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: modalSlideIn 0.2s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1E3A5F;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+}
+
+.modalClose {
+  background: transparent;
+  border: none;
+  font-size: 2rem;
+  line-height: 1;
+  color: #6B7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.modalClose:hover {
+  background: #F3F4F6;
+  color: #1E3A5F;
+}
+
+.citeForm {
+  padding: 1.5rem;
+}
+
+.formGroup {
+  margin-bottom: 1.25rem;
+}
+
+.formGroup:last-of-type {
+  margin-bottom: 1.75rem;
+}
+
+.formLabel {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.required {
+  color: #EF4444;
+}
+
+.formInput {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.9375rem;
+  font-family: 'Inter', sans-serif;
+  color: #1F2937;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.formInput:focus {
+  outline: none;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.formInput::placeholder {
+  color: #9CA3AF;
+}
+
+.formHint {
+  font-size: 0.8125rem;
+  color: #6B7280;
+  margin: 0.5rem 0 0 0;
+  font-family: 'Inter', sans-serif;
+  line-height: 1.4;
+}
+
+.modalActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #E5E7EB;
+}
+
+.cancelButton {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  color: #374151;
+  background: #FFFFFF;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelButton:hover {
+  background: #F9FAFB;
+  border-color: #9CA3AF;
+}
+
+.submitButton {
+  padding: 0.625rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  color: #FFFFFF;
+  background: #3B82F6;
+  border: 1px solid #3B82F6;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submitButton:hover {
+  background: #2563EB;
+  border-color: #2563EB;
+}
+
+.submitButton:disabled {
+  background: #93C5FD;
+  border-color: #93C5FD;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .pageContainer {
@@ -346,19 +641,29 @@
 
   .statsActionsBar {
     padding: 0.875rem;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .statsGroup {
     gap: 1rem;
+    justify-content: space-around;
+  }
+
+  .actionButtons {
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .shareButton {
+    flex: 1;
+    justify-content: center;
+    font-size: 0.8125rem;
+    padding: 0.5rem 0.75rem;
   }
 
   .statItem {
     font-size: 0.8125rem;
-  }
-
-  .shareButton {
-    font-size: 0.8125rem;
-    padding: 0.4375rem 0.875rem;
   }
 
   .heroImage {
@@ -389,6 +694,62 @@
     font-size: 0.75rem;
     padding: 0.3125rem 0.75rem;
   }
+
+  .coauthorsSection {
+    padding: 1.25rem;
+  }
+
+  .coauthorsHeading {
+    font-size: 1rem;
+  }
+
+  .coauthorsList {
+    grid-template-columns: 1fr;
+  }
+
+  .coauthorCard {
+    padding: 0.875rem;
+  }
+
+  .coauthorAvatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .coauthorName {
+    font-size: 0.875rem;
+  }
+
+  .coauthorProfession {
+    font-size: 0.75rem;
+  }
+
+  .modalContent {
+    max-width: 100%;
+    margin: 1rem;
+  }
+
+  .modalHeader {
+    padding: 1.25rem;
+  }
+
+  .modalTitle {
+    font-size: 1.125rem;
+  }
+
+  .citeForm {
+    padding: 1.25rem;
+  }
+
+  .modalActions {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .cancelButton,
+  .submitButton {
+    width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
@@ -409,15 +770,8 @@
     height: 36px;
   }
 
-  .statsActionsBar {
-    flex-direction: column;
-    align-items: flex-start;
+  .statsGroup {
     gap: 0.75rem;
-  }
-
-  .shareButton {
-    width: 100%;
-    justify-content: center;
   }
 
   .heroImage {
@@ -435,12 +789,33 @@
   .sectionText {
     font-size: 0.875rem;
   }
+
+  .coauthorsSection {
+    padding: 1rem;
+  }
+
+  .coauthorsHeading::before {
+    width: 3px;
+    height: 16px;
+  }
+
+  .coauthorCard {
+    gap: 0.75rem;
+  }
+
+  .coauthorAvatar {
+    width: 36px;
+    height: 36px;
+  }
 }
 
 /* Focus States for Accessibility */
 .authorNameLink:focus,
 .tagPill:focus,
-.shareButton:focus {
+.shareButton:focus,
+.modalClose:focus,
+.cancelButton:focus,
+.submitButton:focus {
   outline: 2px solid #3B82F6;
   outline-offset: 2px;
 }
@@ -452,7 +827,8 @@
   }
 
   .statsActionsBar,
-  .shareButton {
+  .shareButton,
+  .actionButtons {
     display: none;
   }
 

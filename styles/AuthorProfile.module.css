@@ -454,3 +454,98 @@
     font-size: 1.25rem;
   }
 }
+
+/* ADD/UPDATE these styles in AuthorProfile.module.css */
+
+/* Article Section Spacing - ADD THIS NEW CLASS */
+.articleSection {
+  margin-bottom: 3rem;
+}
+
+.articleSection:last-child {
+  margin-bottom: 0;
+}
+
+/* Update Stats Row to accommodate 4 items */
+.statsRow {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 2.5rem; /* Reduced gap for 4 items */
+  padding: 1.25rem 0 0.5rem 0;
+  border-top: 1px solid #D4C4A8;
+  width: 100%;
+}
+
+/* Section Title Improvements */
+.sectionTitle {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2C3E50;
+  margin: 0 0 2rem 0;
+  font-family: Arial, Helvetica, sans-serif, sans-serif;
+  position: relative;
+  padding-bottom: 0.75rem;
+}
+
+.sectionTitle::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: #FFD700;
+  border-radius: 2px;
+}
+
+/* Tablet Responsive Updates */
+@media (max-width: 1024px) {
+  .statsRow {
+    gap: 1.75rem;
+  }
+  
+  .articleSection {
+    margin-bottom: 2.5rem;
+  }
+}
+
+/* Mobile Responsive Updates */
+@media (max-width: 768px) {
+  .statsRow {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    justify-content: center;
+  }
+  
+  .articleSection {
+    margin-bottom: 2rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.375rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Small Mobile Updates */
+@media (max-width: 480px) {
+  .statsRow {
+    gap: 1.25rem;
+    padding-top: 1rem;
+  }
+
+  .articleSection {
+    margin-bottom: 1.5rem;
+  }
+  
+  .sectionTitle {
+    font-size: 1.25rem;
+  }
+  
+  .sectionTitle::after {
+    width: 40px;
+    height: 2px;
+  }
+}

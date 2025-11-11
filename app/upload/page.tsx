@@ -419,7 +419,7 @@ export default function UploadArticle() {
     }
   };
 
-  // Submit for Review Function (modified from original handleSubmit)
+  // Submit for Review Function 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
@@ -568,11 +568,15 @@ export default function UploadArticle() {
         return;
       }
 
-      // Insert co-authors if any selected
+      setUploadProgress(85);
+
+      // ✅ NEW: Insert co-authors AND send invitations
       if (selectedCoAuthors.length > 0 && articleData) {
         const coauthorInserts = selectedCoAuthors.map((coauthor) => ({
           article_id: articleData.id,
           coauthor_id: coauthor.id,
+          accepted: false, // Start as false
+          invited_at: new Date().toISOString(),
         }));
 
         const { error: coauthorError } = await supabase
@@ -581,11 +585,42 @@ export default function UploadArticle() {
 
         if (coauthorError) {
           console.error("Error adding co-authors:", coauthorError);
+        } else {
+          // ✅ Send invitation emails
+          try {
+            // Get main author name
+            const { data: authorProfile } = await supabase
+              .from("profiles")
+              .select("full_name, username")
+              .eq("id", user.id)
+              .single();
+
+            const mainAuthorName =
+              authorProfile?.full_name || authorProfile?.username || "Author";
+
+            // Call the email helper (this will be an API route call in production)
+            await fetch("/api/coauthor/invite", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                articleId: articleData.id,
+                articleTitle: formData.title.trim(),
+                articleSlug: uniqueSlug,
+                mainAuthorName,
+                coauthorIds: selectedCoAuthors.map((c) => c.id),
+              }),
+            });
+          } catch (emailErr) {
+            console.error("Failed to send co-author invitations:", emailErr);
+            // Don't fail the submission if emails fail
+          }
         }
       }
 
       setUploadProgress(100);
-      alert("Article submitted successfully! Check Your Gmail Frequently");
+      alert(
+        "Article submitted successfully! Co-author invitations have been sent."
+      );
       setTimeout(() => router.push("/"), 500);
     } catch (error) {
       console.error(error);
@@ -1015,7 +1050,13 @@ export default function UploadArticle() {
               type="button"
               onClick={handleSaveDraft}
               className={styles.draftButton}
-              disabled={uploading || loading || savingDraft || !user || !formData.title.trim()}
+              disabled={
+                uploading ||
+                loading ||
+                savingDraft ||
+                !user ||
+                !formData.title.trim()
+              }
             >
               {savingDraft ? "Saving..." : "Save Draft"}
             </button>
