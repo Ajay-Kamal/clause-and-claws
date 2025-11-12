@@ -34,11 +34,11 @@ const ClauseRank: React.FC = () => {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const leadershipBoard: Leader[] = [
-    { rank: 1, name: "Avugaddi Venkat Murali", role: "Student", score: 400 },
-    { rank: 2, name: "Priya Sharma", role: "Legal Analyst", score: 385 },
-    { rank: 3, name: "Rajesh Kumar", role: "Law Student", score: 372 },
-    { rank: 4, name: "Anita Desai", role: "Researcher", score: 356 },
-    { rank: 5, name: "Vikram Singh", role: "Student", score: 340 },
+    { rank: 1, name: "Avugaddi Venkat Murali", role: "Student", score: 9 },
+    { rank: 2, name: "Priya Sharma", role: "Legal Analyst", score: 8.7 },
+    { rank: 3, name: "Rajesh Kumar", role: "Law Student", score: 7.2 },
+    { rank: 4, name: "Anita Desai", role: "Researcher", score: 6.8 },
+    { rank: 5, name: "Vikram Singh", role: "Student", score: 6.5 },
   ];
 
   // Fallback data in case API fails
