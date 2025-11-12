@@ -63,6 +63,20 @@ const adminData: Admin[] = [
       "Drafting Wizard and Experienced in peer-reviewing.",
       "Data Privacy Professional.",
     ],
+  },
+  {
+    id: 3,
+    name: "Venkat Murali Avugaddi",
+    title: "Chief Technical Officer",
+    email: "venkatmuraliavugaddi@gmail.com",
+    linkedin: "https://www.linkedin.com/in/murali-avugaddi-918904269/",
+    profileImage: "/images/murali-anna.jpg",
+    bio: "I am Avugaddi Venkat Murali, co‑founder of this online legal publication platform here in India. I am also building my agency, Avugaddi Software Systems. Through our agency, we designed and developed Clause and Claws entirely from the ground up. From constructing the full-stack architecture to creating intuitive user experiences, every aspect of this product reflects innovation, usability, and reliability. Clause and Claws is the first product launched under my agency, representing my vision of blending technology with meaningful impact—creating a digital space where law, research, and fresh ideas can thrive. As a student passionate about technology and design, I focus on learning and applying modern development and UX/UI techniques. Through this initiative, I aim to combine creativity and problem-solving to support the legal community and lay a foundation for future products and services as my agency grows.",
+    expertise: ["UI/UX Design", "Flutter","Backend Development","Spring Boot"],
+    achievements: [
+      "Co‑founded an online legal publication platform in India.",
+      "Building Avugaddi Software Systems, a student‑led digital agency."
+    ],
   }
 ];
 
