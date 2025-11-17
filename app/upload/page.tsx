@@ -91,6 +91,18 @@ const LAW_CATEGORIES = {
     "Feminist Legal Studies",
     "Critical Legal Studies",
   ],
+  "Geopolitical & International Affairs Tags (Broad-Level)": [
+    "Global Governance & Diplomacy",
+    "International Relations & Law",
+    "National Security & Strategic Affairs",
+    "Defence & Military Law",
+    "Foreign Policy & Treaties",
+    "Border Disputes & Territorial Law",
+    "International trade & Economic Sanctions",
+    "Maritime & Space Governance",
+    "Global Humanitarian Law",
+    "South Asian Geopolitics",
+  ] 
 };
 
 export default function UploadArticle() {
@@ -295,7 +307,6 @@ export default function UploadArticle() {
     if (file) handleThumbnailSelect(file);
   };
 
-  // Save Draft Function
   const handleSaveDraft = async () => {
     if (!user) {
       alert("Please sign in before saving a draft.");
@@ -306,7 +317,6 @@ export default function UploadArticle() {
     setSavingDraft(true);
 
     try {
-      // Basic validation - only title required for draft
       if (!formData.title.trim()) {
         setErrors({ title: "Title is required to save draft" });
         setSavingDraft(false);
@@ -319,7 +329,6 @@ export default function UploadArticle() {
       let fileUrl = null;
       let thumbnailPublicUrl = DEFAULT_THUMBNAIL;
 
-      // Upload file if present
       if (formData.file) {
         const fileExt = formData.file.name.split(".").pop();
         const fileName = `${uniqueSlug}-${Date.now()}.${fileExt}`;
@@ -344,7 +353,6 @@ export default function UploadArticle() {
         fileUrl = urlData.publicUrl;
       }
 
-      // Upload thumbnail if present
       if (formData.thumbnail) {
         const thumbErr = validateThumbnail(formData.thumbnail);
         if (!thumbErr) {
@@ -368,7 +376,6 @@ export default function UploadArticle() {
         }
       }
 
-      // Insert draft article
       const { data: articleData, error: dbError } = await supabase
         .from("articles")
         .insert({
@@ -379,14 +386,14 @@ export default function UploadArticle() {
           tags: formData.tags.length > 0 ? formData.tags : null,
           filename: formData.file?.name || null,
           file_url: fileUrl,
-          watermarked_pdf_url: null, // No watermark for drafts
+          watermarked_pdf_url: null,
           thumbnail_url: thumbnailPublicUrl,
           type: formData.type,
           views: 0,
           likes: 0,
           is_featured: false,
           published: false,
-          draft: true, // THIS IS THE KEY FIELD
+          draft: true,
         })
         .select()
         .single();
@@ -397,7 +404,6 @@ export default function UploadArticle() {
         return;
       }
 
-      // Insert co-authors if any selected
       if (selectedCoAuthors.length > 0 && articleData) {
         const coauthorInserts = selectedCoAuthors.map((coauthor) => ({
           article_id: articleData.id,
@@ -419,7 +425,6 @@ export default function UploadArticle() {
     }
   };
 
-  // Submit for Review Function 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
@@ -538,7 +543,6 @@ export default function UploadArticle() {
       const watermarkedPdfUrl = watermarkData.watermarkedPdfUrl;
       setUploadProgress(75);
 
-      // Insert article with draft = false (submitted for review)
       const { data: articleData, error: dbError } = await supabase
         .from("articles")
         .insert({
@@ -556,7 +560,7 @@ export default function UploadArticle() {
           likes: 0,
           is_featured: false,
           published: false,
-          draft: false, // NOT A DRAFT - submitted for review
+          draft: false,
         })
         .select()
         .single();
@@ -570,12 +574,11 @@ export default function UploadArticle() {
 
       setUploadProgress(85);
 
-      // ✅ NEW: Insert co-authors AND send invitations
       if (selectedCoAuthors.length > 0 && articleData) {
         const coauthorInserts = selectedCoAuthors.map((coauthor) => ({
           article_id: articleData.id,
           coauthor_id: coauthor.id,
-          accepted: false, // Start as false
+          accepted: false,
           invited_at: new Date().toISOString(),
         }));
 
@@ -586,9 +589,7 @@ export default function UploadArticle() {
         if (coauthorError) {
           console.error("Error adding co-authors:", coauthorError);
         } else {
-          // ✅ Send invitation emails
           try {
-            // Get main author name
             const { data: authorProfile } = await supabase
               .from("profiles")
               .select("full_name, username")
@@ -598,7 +599,6 @@ export default function UploadArticle() {
             const mainAuthorName =
               authorProfile?.full_name || authorProfile?.username || "Author";
 
-            // Call the email helper (this will be an API route call in production)
             await fetch("/api/coauthor/invite", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -612,7 +612,6 @@ export default function UploadArticle() {
             });
           } catch (emailErr) {
             console.error("Failed to send co-author invitations:", emailErr);
-            // Don't fail the submission if emails fail
           }
         }
       }
@@ -674,46 +673,19 @@ export default function UploadArticle() {
             </select>
           </div>
 
-          <div className={styles.guidelines}>
-            <h3 className={styles.guidelinesTitle}>Publishing Guidelines</h3>
-            <ul className={styles.guidelinesList}>
-              <li>
-                We provide a platform to people to publish on any Niche
-                particularly relating to Law.
-              </li>
-              <li>
-                Word Limit of an article is to be <b>2000</b> words.
-              </li>
-              <li>
-                Follow <b>Bluebook Ed. 21st</b> for Citation.
-              </li>
-              <li>
-                Plagiarism of any kind shall be less than <b>10%</b> of the
-                whole project
-              </li>
-              <li>
-                The work must be <b>Original</b> and the property of the
-                publisher.
-              </li>
-              <li>
-                The font shall be Times New Roman, Size- 12 for body, Size- 14
-                for Headings & Size- 10 for footnotes. Justify your text,
-                (CTRL+J).
-              </li>
-              <li>
-                The spacing shall be 1.5 for the body but 1.0 for footnotes.{" "}
-              </li>
-              <li>
-                The Page Layout should be Portrait and the margins should be 2
-                cm (All sides: Top, Bottom, Left, Right).
-              </li>
-              <li>
-                For writing case names, use bold & italic font. E.g.:
-                <i>KS Puttaswamy vs. Union of India</i> and also mention the
-                complete citation in footnotes.
-              </li>
-              <li>No page borders should be there. </li>
-            </ul>
+          {/* ✅ REPLACED GUIDELINES SECTION WITH BUTTON */}
+          <div className={styles.guidelinesButton}>
+            <h3 className={styles.guidelinesButtonTitle}>Before You Submit</h3>
+            <p className={styles.guidelinesButtonText}>
+              Please review our comprehensive submission guidelines to ensure your manuscript meets all requirements.
+            </p>
+            <button
+              type="button"
+              onClick={() => router.push('/guidelines')}
+              className={styles.viewGuidelinesButton}
+            >
+              View Submission Guidelines
+            </button>
           </div>
 
           <div className={styles.fieldGroup}>
@@ -864,7 +836,6 @@ export default function UploadArticle() {
             </div>
           </div>
 
-          {/* ✅ FIXED: Only render CoAuthorSelector when user is available */}
           {user && (
             <CoAuthorSelector
               selectedCoAuthors={selectedCoAuthors}

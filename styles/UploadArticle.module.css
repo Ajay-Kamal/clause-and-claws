@@ -755,3 +755,62 @@
     width: 100%;
   }
 }
+
+/* ✅ ADD THESE STYLES TO YOUR UploadArticle.module.css */
+
+.guidelinesButton {
+  padding: 24px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 2px 8px rgba(68, 72, 89, 0.08);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.guidelinesButton:hover {
+  box-shadow: 0 4px 12px rgba(68, 72, 89, 0.15);
+}
+
+.guidelinesButtonTitle {
+  font-family: "Arial", "Roboto", "Open Sans", system-ui, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #000000;
+  margin-bottom: 12px;
+}
+
+.guidelinesButtonText {
+  font-family: "Arial", "Roboto", "Open Sans", system-ui, sans-serif;
+  font-size: 14px;
+  color: #000000;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.viewGuidelinesButton {
+  font-family: "Arial", "Roboto", "Open Sans", system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  background-color: #f4d942;
+  color: #000000;
+  padding: 12px 32px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+}
+
+.viewGuidelinesButton:hover {
+  background-color: #e0a800;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+}
+
+.viewGuidelinesButton:active {
+  transform: translateY(0);
+}
+
+/* ✅ REMOVE THE OLD .guidelines, .guidelinesTitle, .guidelinesList STYLES */
+/* They are no longer needed since we removed that section */

@@ -9,16 +9,69 @@ const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+// Convert image to WebP format
+const convertImageToWebP = (file: File): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    
+    reader.onload = (e) => {
+      const img = new Image();
+      
+      img.onload = () => {
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        
+        // Draw image on canvas
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+        
+        ctx.drawImage(img, 0, 0);
+        
+        // Convert to WebP blob
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error('Failed to convert image to WebP'));
+            }
+          },
+          'image/webp',
+          0.9 // Quality (0-1)
+        );
+      };
+      
+      img.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+      
+      img.src = e.target?.result as string;
+    };
+    
+    reader.onerror = () => {
+      reject(new Error('Failed to read file'));
+    };
+    
+    reader.readAsDataURL(file);
+  });
+};
+
 export default function ProfileEdit() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarFile, setAvatarFile] = useState<Blob | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [convertingImage, setConvertingImage] = useState(false);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -95,31 +148,67 @@ export default function ProfileEdit() {
     }
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 50 * 1024) {
-      setErrors((prev) => ({
-        ...prev,
-        avatar: "File size must be less than 50KB",
+    // Check file type - accept JPEG, JPG, PNG
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    if (!validTypes.includes(file.type)) {
+      setErrors((prev) => ({ 
+        ...prev, 
+        avatar: "File must be in JPEG, JPG, or PNG format" 
       }));
       return;
     }
 
-    if (file.type !== "image/webp") {
-      setErrors((prev) => ({ ...prev, avatar: "File must be in WEBP format" }));
+    // Check file size (before conversion)
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit for original file
+      setErrors((prev) => ({
+        ...prev,
+        avatar: "File size must be less than 5MB",
+      }));
       return;
     }
 
+    setConvertingImage(true);
     setErrors((prev) => ({ ...prev, avatar: "" }));
-    setAvatarFile(file);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setAvatarPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    try {
+      console.log("🔄 Converting image to WebP...");
+      
+      // Convert to WebP
+      const webpBlob = await convertImageToWebP(file);
+      
+      // Check converted file size
+      if (webpBlob.size > 50 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          avatar: "Converted image is too large. Please use a smaller image.",
+        }));
+        setConvertingImage(false);
+        return;
+      }
+
+      console.log("✅ Image converted to WebP successfully");
+      setAvatarFile(webpBlob);
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(webpBlob);
+      
+    } catch (error) {
+      console.error("❌ Error converting image:", error);
+      setErrors((prev) => ({ 
+        ...prev, 
+        avatar: "Failed to convert image. Please try another file." 
+      }));
+    } finally {
+      setConvertingImage(false);
+    }
   };
 
   const validateForm = (): boolean => {
@@ -188,7 +277,10 @@ export default function ProfileEdit() {
         const fileName = `${user.id}_${Date.now()}.webp`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("avatars")
-          .upload(`avatars/${fileName}`, avatarFile, { upsert: true });
+          .upload(`avatars/${fileName}`, avatarFile, { 
+            upsert: true,
+            contentType: 'image/webp'
+          });
 
         if (uploadError) {
           console.error("❌ Avatar upload error:", uploadError);
@@ -329,34 +421,50 @@ export default function ProfileEdit() {
                       className={styles.avatarImage}
                     />
                     <div className={styles.avatarOverlay}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                        <circle cx="12" cy="13" r="4"></circle>
-                      </svg>
+                      {convertingImage ? (
+                        <div className={styles.miniSpinner}></div>
+                      ) : (
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                          <circle cx="12" cy="13" r="4"></circle>
+                        </svg>
+                      )}
                     </div>
                   </div>
                   <div className={styles.avatarUpload}>
                     <input
                       type="file"
-                      accept=".webp"
+                      accept="image/jpeg,image/jpg,image/png"
                       onChange={handleAvatarChange}
                       className={styles.fileInput}
                       id="avatar-upload"
+                      disabled={convertingImage}
                     />
                     <label htmlFor="avatar-upload" className={styles.fileButton}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="7,10 12,15 17,10"></polyline>
-                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                      </svg>
-                      Change Photo
+                      {convertingImage ? (
+                        <>
+                          <div className={styles.miniSpinner}></div>
+                          Converting...
+                        </>
+                      ) : (
+                        <>
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7,10 12,15 17,10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                          </svg>
+                          Change Photo
+                        </>
+                      )}
                     </label>
                     {errors.avatar && (
                       <p className={styles.errorText}>
                         {errors.avatar}
                       </p>
                     )}
-                    <p className={styles.helpText}>Max 50KB, WEBP format only</p>
+                    <p className={styles.helpText}>
+                      JPEG, JPG, or PNG (max 5MB) • Auto-converted to WebP
+                    </p>
                   </div>
                 </div>
               </div>
@@ -486,7 +594,7 @@ export default function ProfileEdit() {
           <div className={styles.submitSection}>
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || convertingImage}
               className={styles.submitButton}
             >
               {submitting ? (

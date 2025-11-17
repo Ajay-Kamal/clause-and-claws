@@ -253,18 +253,16 @@ export default function Footer() {
             <ul className={styles.linkList}>
               <li>
                 <a
-                  href="/files/author-guidelines.docx"
+                  href="/guidelines"
                   className={styles.footerLink}
-                  download
                 >
                   Author Guidelines
                 </a>
               </li>
               <li>
                 <a
-                  href="/files/privacy-policy.docx"
+                  href="/terms-of-service"
                   className={styles.footerLink}
-                  download
                 >
                   Editorial Policy
                 </a>
@@ -319,23 +317,20 @@ export default function Footer() {
           </div>
           <div className={styles.legalLinks}>
             <a
-              href="/files/privacy-policy.docx"
+              href="/privacy-policy"
               className={styles.legalLink}
-              download
             >
               Privacy Policy
             </a>
             <a
-              href="/files/terms-of-service.docx"
+              href="terms-of-service"
               className={styles.legalLink}
-              download
             >
               Terms of Service
             </a>
             <a
-              href="/files/privacy-policy.docx"
+              href="privacy-policy"
               className={styles.legalLink}
-              download
             >
               Cookie Policy
             </a>

@@ -49,8 +49,6 @@ export default async function ArticlePage({ params }: any) {
     .eq("article_coauthors.accepted", true) // Filter coauthors, not articles
     .single();
 
-  console.log("Fetched article:", article, "Error:", error);
-
   if (error || !article) {
     console.error("Article fetch error:", error);
     return (
