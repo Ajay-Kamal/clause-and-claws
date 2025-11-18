@@ -17,54 +17,99 @@ const slugifyUsername = (username: string): string => {
     .slice(0, 20);
 };
 
-// Convert image to WebP format
-const convertImageToWebP = (file: File): Promise<Blob> => {
+// Convert image to WebP format with target size of 50KB
+const convertImageToWebP = (file: File, maxSizeKB?: number): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
-    reader.onload = (e) => {
+
+    reader.onload = async (e) => {
       const img = new Image();
-      
-      img.onload = () => {
-        // Create canvas
+
+      img.onload = async () => {
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
-        
-        // Draw image on canvas
+
         const ctx = canvas.getContext('2d');
         if (!ctx) {
           reject(new Error('Failed to get canvas context'));
           return;
         }
-        
+
         ctx.drawImage(img, 0, 0);
-        
-        // Convert to WebP blob
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error('Failed to convert image to WebP'));
+
+        const toBlobAsync = (quality: number) =>
+          new Promise<Blob | null>((res) =>
+            canvas.toBlob((b) => res(b), 'image/webp', quality)
+          );
+
+        try {
+          let quality = 0.9;
+          let blob: Blob | null = await toBlobAsync(quality);
+          if (!blob) {
+            reject(new Error('Failed to convert image to WebP'));
+            return;
+          }
+
+          if (!maxSizeKB) {
+            resolve(blob);
+            return;
+          }
+
+          const targetBytes = maxSizeKB * 1024;
+
+          // Reduce quality progressively
+          while (blob.size > targetBytes && quality > 0.1) {
+            quality = Math.max(0.1, +(quality - 0.1).toFixed(2));
+            const newBlob = await toBlobAsync(quality);
+            if (newBlob) blob = newBlob;
+            else break;
+          }
+
+          // If still larger than target, scale down dimensions
+          if (blob.size > targetBytes) {
+            let scale = 0.9;
+            while (blob.size > targetBytes && scale > 0.1) {
+              const newWidth = Math.max(1, Math.round(img.width * scale));
+              const newHeight = Math.max(1, Math.round(img.height * scale));
+              canvas.width = newWidth;
+              canvas.height = newHeight;
+              const ctx2 = canvas.getContext('2d');
+              if (!ctx2) break;
+              ctx2.drawImage(img, 0, 0, newWidth, newHeight);
+
+              let q = 0.8;
+              let resizedBlob: Blob | null = await toBlobAsync(q);
+              while (resizedBlob && resizedBlob.size > targetBytes && q > 0.1) {
+                q = Math.max(0.1, +(q - 0.1).toFixed(2));
+                const next = await toBlobAsync(q);
+                if (next) resizedBlob = next;
+                else break;
+              }
+
+              if (resizedBlob) blob = resizedBlob;
+              scale = Math.max(0.1, +(scale - 0.1).toFixed(2));
             }
-          },
-          'image/webp',
-          0.9 // Quality (0-1)
-        );
+          }
+
+          if (blob) resolve(blob);
+          else reject(new Error('Failed to convert image to WebP'));
+        } catch (err) {
+          reject(err);
+        }
       };
-      
+
       img.onerror = () => {
         reject(new Error('Failed to load image'));
       };
-      
+
       img.src = e.target?.result as string;
     };
-    
+
     reader.onerror = () => {
       reject(new Error('Failed to read file'));
     };
-    
+
     reader.readAsDataURL(file);
   });
 };
@@ -76,7 +121,9 @@ export default function Onboarding() {
   const router = useRouter();
   const [usernameInputError, setUsernameInputError] = useState("");
   const [checkingUsername, setCheckingUsername] = useState(false);
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(
+    null
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [avatarFile, setAvatarFile] = useState<Blob | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
@@ -122,17 +169,17 @@ export default function Onboarding() {
           setProfile(null);
         } else if (data) {
           console.log("✅ Profile data:", data);
-          
+
           // Check if profile is already complete
           if (data.username && data.full_name && data.bio) {
             console.log("✅ Profile already complete, redirecting...");
             router.push("/");
             return;
           }
-          
+
           setProfile(data);
           setAvatarPreview(data.avatar_url || "/default-avatar.webp");
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             username: data.username || "",
             full_name: data.full_name || "",
@@ -234,21 +281,21 @@ export default function Onboarding() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file type - accept JPEG, JPG, PNG
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    // Check file type - accept JPEG, JPG, PNG, WebP
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!validTypes.includes(file.type)) {
-      setErrors((prev) => ({ 
-        ...prev, 
-        avatar: "File must be in JPEG, JPG, or PNG format" 
+      setErrors((prev) => ({
+        ...prev,
+        avatar: "File must be in JPEG, JPG, PNG, or WebP format",
       }));
       return;
     }
 
-    // Check file size (before conversion)
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit for original file
+    // Check original file size (10MB limit before conversion)
+    if (file.size > 10 * 1024 * 1024) {
       setErrors((prev) => ({
         ...prev,
-        avatar: "File size must be less than 5MB",
+        avatar: "Original file size must be less than 10MB",
       }));
       return;
     }
@@ -257,22 +304,22 @@ export default function Onboarding() {
     setErrors((prev) => ({ ...prev, avatar: "" }));
 
     try {
-      console.log("🔄 Converting image to WebP...");
-      
-      // Convert to WebP
-      const webpBlob = await convertImageToWebP(file);
-      
-      // Check converted file size
-      if (webpBlob.size > 50 * 1024) {
-        setErrors((prev) => ({
-          ...prev,
-          avatar: "Converted image is too large. Please use a smaller image.",
-        }));
-        setConvertingImage(false);
-        return;
-      }
+      console.log(
+        `🔄 Converting image to WebP... Original size: ${(
+          file.size / 1024
+        ).toFixed(2)}KB`
+      );
 
-      console.log("✅ Image converted to WebP successfully");
+      // Convert to WebP with automatic compression (target: 50KB max)
+      const webpBlob = await convertImageToWebP(file, 50);
+
+      const finalSizeKB = webpBlob.size / 1024;
+      console.log(
+        `✅ Image converted successfully! Final size: ${finalSizeKB.toFixed(
+          2
+        )}KB`
+      );
+
       setAvatarFile(webpBlob);
 
       // Create preview
@@ -281,12 +328,11 @@ export default function Onboarding() {
         setAvatarPreview(reader.result as string);
       };
       reader.readAsDataURL(webpBlob);
-      
     } catch (error) {
       console.error("❌ Error converting image:", error);
-      setErrors((prev) => ({ 
-        ...prev, 
-        avatar: "Failed to convert image. Please try another file." 
+      setErrors((prev) => ({
+        ...prev,
+        avatar: "Failed to convert image. Please try another file.",
       }));
     } finally {
       setConvertingImage(false);
@@ -331,9 +377,9 @@ export default function Onboarding() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     console.log("🚀 Starting form submission...");
-    
+
     // Clear previous errors
     setErrors({});
 
@@ -388,12 +434,12 @@ export default function Onboarding() {
       let avatar_url = profile?.avatar_url || "/default-avatar.webp";
       if (avatarFile) {
         console.log("📤 Uploading avatar...");
-        const fileName = `${user.id}_${Date.now()}.webp`;
+        const fileName = `avatars/${user.id}_${Date.now()}.webp`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("avatars")
-          .upload(`avatars/${fileName}`, avatarFile, { 
-            upsert: true,
-            contentType: 'image/webp'
+          .upload(fileName, avatarFile, {
+            upsert: false,
+            contentType: "image/webp",
           });
 
         if (uploadError) {
@@ -405,7 +451,7 @@ export default function Onboarding() {
 
         const { data: publicData } = supabase.storage
           .from("avatars")
-          .getPublicUrl(`avatars/${fileName}`);
+          .getPublicUrl(fileName);
 
         avatar_url = publicData.publicUrl;
         console.log("✅ Avatar uploaded:", avatar_url);
@@ -428,14 +474,14 @@ export default function Onboarding() {
 
       const { data: updatedProfile, error: updateError } = await supabase
         .from("profiles")
-        .upsert(profileData, { onConflict: 'id' })
+        .upsert(profileData, { onConflict: "id" })
         .select()
         .single();
 
       if (updateError) {
         console.error("❌ Profile update error:", updateError);
-        setErrors({ 
-          _form: `Failed to save profile: ${updateError.message}` 
+        setErrors({
+          _form: `Failed to save profile: ${updateError.message}`,
         });
         setSubmitting(false);
         return;
@@ -448,11 +494,12 @@ export default function Onboarding() {
       setTimeout(() => {
         window.location.href = "/";
       }, 3000);
-
     } catch (error: any) {
       console.error("❌ Unexpected error during submission:", error);
-      setErrors({ 
-        _form: `An unexpected error occurred: ${error.message || 'Please try again'}` 
+      setErrors({
+        _form: `An unexpected error occurred: ${
+          error.message || "Please try again"
+        }`,
       });
       setSubmitting(false);
     }
@@ -476,7 +523,14 @@ export default function Onboarding() {
         <div className={styles.successPopup}>
           <div className={styles.successPopupContent}>
             <div className={styles.successIcon}>
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                 <polyline points="22,4 12,14.01 9,11.01"></polyline>
               </svg>
@@ -493,7 +547,14 @@ export default function Onboarding() {
       <div className={styles.card}>
         <div className={styles.header}>
           <div className={styles.headerIcon}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
@@ -506,7 +567,14 @@ export default function Onboarding() {
 
         {errors._form && (
           <div className={styles.errorAlert}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <circle cx="12" cy="12" r="10"></circle>
               <line x1="15" y1="9" x2="9" y2="15"></line>
               <line x1="9" y1="9" x2="15" y2="15"></line>
@@ -521,13 +589,11 @@ export default function Onboarding() {
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formSection}>
             <h2 className={styles.sectionTitle}>Profile Information</h2>
-            
+
             {/* Avatar Upload */}
             <div className={styles.avatarRow}>
               <div className={styles.formGroup}>
-                <label className={styles.label}>
-                  Profile Photo
-                </label>
+                <label className={styles.label}>Profile Photo</label>
                 <div className={styles.avatarSection}>
                   <div className={styles.avatarPreview}>
                     <img
@@ -539,7 +605,14 @@ export default function Onboarding() {
                       {convertingImage ? (
                         <div className={styles.miniSpinner}></div>
                       ) : (
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
                           <circle cx="12" cy="13" r="4"></circle>
                         </svg>
@@ -549,13 +622,16 @@ export default function Onboarding() {
                   <div className={styles.avatarUpload}>
                     <input
                       type="file"
-                      accept="image/jpeg,image/jpg,image/png"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
                       onChange={handleAvatarChange}
                       className={styles.fileInput}
                       id="avatar-upload"
                       disabled={convertingImage}
                     />
-                    <label htmlFor="avatar-upload" className={styles.fileButton}>
+                    <label
+                      htmlFor="avatar-upload"
+                      className={styles.fileButton}
+                    >
                       {convertingImage ? (
                         <>
                           <div className={styles.miniSpinner}></div>
@@ -563,7 +639,14 @@ export default function Onboarding() {
                         </>
                       ) : (
                         <>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <svg
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                          >
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="7,10 12,15 17,10"></polyline>
                             <line x1="12" y1="15" x2="12" y2="3"></line>
@@ -573,12 +656,10 @@ export default function Onboarding() {
                       )}
                     </label>
                     {errors.avatar && (
-                      <p className={styles.errorText}>
-                        {errors.avatar}
-                      </p>
+                      <p className={styles.errorText}>{errors.avatar}</p>
                     )}
                     <p className={styles.helpText}>
-                      JPEG, JPG, or PNG (max 5MB) • Auto-converted to WebP
+                      JPEG, JPG, PNG, or WebP (max 10MB) • Auto-converted to WebP (≤50KB)
                     </p>
                   </div>
                 </div>
@@ -588,9 +669,7 @@ export default function Onboarding() {
             <div className={styles.fieldRow}>
               {/* Username */}
               <div className={styles.fieldGroup}>
-                <label className={styles.label}>
-                  Username *
-                </label>
+                <label className={styles.label}>Username *</label>
                 <div className={styles.inputWrapper}>
                   <span className={styles.inputPrefix}>@</span>
                   <input
@@ -600,15 +679,15 @@ export default function Onboarding() {
                     value={formData.username}
                     onChange={(e) => onChange("username", e.target.value)}
                     className={`${styles.input} ${styles.inputWithPrefix} ${
-                      usernameInputError || errors.username ? styles.inputError : ""
+                      usernameInputError || errors.username
+                        ? styles.inputError
+                        : ""
                     }`}
                   />
                 </div>
 
                 {usernameInputError && (
-                  <p className={styles.errorText}>
-                    {usernameInputError}
-                  </p>
+                  <p className={styles.errorText}>{usernameInputError}</p>
                 )}
 
                 {!usernameInputError &&
@@ -617,7 +696,7 @@ export default function Onboarding() {
                     <p className={styles.helpText}>
                       Username must be at least 3 characters
                     </p>
-                )}
+                  )}
 
                 {!usernameInputError && formData.username.length >= 3 && (
                   <div className={styles.usernameStatus}>
@@ -629,7 +708,14 @@ export default function Onboarding() {
                     )}
                     {!checkingUsername && usernameAvailable === true && (
                       <p className={styles.successText}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <polyline points="20,6 9,17 4,12"></polyline>
                         </svg>
                         @{formData.username} is available
@@ -637,7 +723,14 @@ export default function Onboarding() {
                     )}
                     {!checkingUsername && usernameAvailable === false && (
                       <p className={styles.errorText}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
                           <circle cx="12" cy="12" r="10"></circle>
                           <line x1="15" y1="9" x2="9" y2="15"></line>
                           <line x1="9" y1="9" x2="15" y2="15"></line>
@@ -649,68 +742,60 @@ export default function Onboarding() {
                 )}
 
                 {errors.username && (
-                  <p className={styles.errorText}>
-                    {errors.username}
-                  </p>
+                  <p className={styles.errorText}>{errors.username}</p>
                 )}
               </div>
 
               {/* Full Name */}
               <div className={styles.fieldGroup}>
-                <label className={styles.label}>
-                  Full Name *
-                </label>
+                <label className={styles.label}>Full Name *</label>
                 <input
                   type="text"
                   placeholder="Enter your full name"
                   required
                   value={formData.full_name}
                   onChange={(e) => onChange("full_name", e.target.value)}
-                  className={`${styles.input} ${errors.full_name ? styles.inputError : ""}`}
+                  className={`${styles.input} ${
+                    errors.full_name ? styles.inputError : ""
+                  }`}
                 />
                 {errors.full_name && (
-                  <p className={styles.errorText}>
-                    {errors.full_name}
-                  </p>
+                  <p className={styles.errorText}>{errors.full_name}</p>
                 )}
               </div>
             </div>
 
             {/* Bio - MANDATORY */}
             <div className={styles.fieldGroup}>
-              <label className={styles.label}>
-                Bio *
-              </label>
+              <label className={styles.label}>Bio *</label>
               <textarea
                 placeholder="Tell us about yourself, your interests, or what you're passionate about... (minimum 10 characters)"
                 value={formData.bio}
                 onChange={(e) => onChange("bio", e.target.value)}
                 required
-                className={`${styles.textarea} ${errors.bio ? styles.inputError : ""}`}
+                className={`${styles.textarea} ${
+                  errors.bio ? styles.inputError : ""
+                }`}
                 rows={4}
               />
               <div className={styles.bioFooter}>
                 <p className={styles.helpText}>
                   {formData.bio.length}/500 characters
                 </p>
-                {errors.bio && (
-                  <p className={styles.errorText}>
-                    {errors.bio}
-                  </p>
-                )}
+                {errors.bio && <p className={styles.errorText}>{errors.bio}</p>}
               </div>
             </div>
           </div>
 
           <div className={styles.formSection}>
-            <h2 className={styles.sectionTitle}>Additional Information (Optional)</h2>
-            
+            <h2 className={styles.sectionTitle}>
+              Additional Information (Optional)
+            </h2>
+
             <div className={styles.fieldRow}>
               {/* Location */}
               <div className={styles.fieldGroup}>
-                <label className={styles.label}>
-                  Location
-                </label>
+                <label className={styles.label}>Location</label>
                 <input
                   type="text"
                   placeholder="City, Country"
@@ -722,9 +807,7 @@ export default function Onboarding() {
 
               {/* Profession */}
               <div className={styles.fieldGroup}>
-                <label className={styles.label}>
-                  Profession
-                </label>
+                <label className={styles.label}>Profession</label>
                 <input
                   type="text"
                   placeholder="What do you do?"
@@ -737,21 +820,17 @@ export default function Onboarding() {
 
             {/* Website - Optional */}
             <div className={styles.fieldGroup}>
-              <label className={styles.label}>
-                Website (Optional)
-              </label>
+              <label className={styles.label}>Website (Optional)</label>
               <input
                 type="url"
                 placeholder="https://your-website.com"
                 value={formData.link}
                 onChange={(e) => onChange("link", e.target.value)}
-                className={`${styles.input} ${errors.link ? styles.inputError : ""}`}
+                className={`${styles.input} ${
+                  errors.link ? styles.inputError : ""
+                }`}
               />
-              {errors.link && (
-                <p className={styles.errorText}>
-                  {errors.link}
-                </p>
-              )}
+              {errors.link && <p className={styles.errorText}>{errors.link}</p>}
             </div>
           </div>
 
@@ -759,7 +838,12 @@ export default function Onboarding() {
           <div className={styles.submitSection}>
             <button
               type="submit"
-              disabled={submitting || usernameAvailable === false || checkingUsername || convertingImage}
+              disabled={
+                submitting ||
+                usernameAvailable === false ||
+                checkingUsername ||
+                convertingImage
+              }
               className={styles.submitButton}
             >
               {submitting ? (
@@ -769,7 +853,14 @@ export default function Onboarding() {
                 </>
               ) : (
                 <>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                     <polyline points="22,4 12,14.01 9,11.01"></polyline>
                   </svg>
@@ -778,7 +869,8 @@ export default function Onboarding() {
               )}
             </button>
             <p className={styles.submitHelpText}>
-              * Required fields • You can update your information later in profile settings
+              * Required fields • You can update your information later in
+              profile settings
             </p>
           </div>
         </form>

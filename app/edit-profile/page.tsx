@@ -9,56 +9,124 @@ const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// Convert image to WebP format
-const convertImageToWebP = (file: File): Promise<Blob> => {
+// Convert image to WebP format (optional target size in KB)
+const convertImageToWebP = (file: File, maxSizeKB?: number): Promise<Blob> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    
-    reader.onload = (e) => {
+
+    reader.onload = async (e) => {
       const img = new Image();
-      
-      img.onload = () => {
-        // Create canvas
+
+      img.onload = async () => {
         const canvas = document.createElement('canvas');
         canvas.width = img.width;
         canvas.height = img.height;
-        
-        // Draw image on canvas
+
         const ctx = canvas.getContext('2d');
         if (!ctx) {
           reject(new Error('Failed to get canvas context'));
           return;
         }
-        
+
         ctx.drawImage(img, 0, 0);
-        
-        // Convert to WebP blob
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error('Failed to convert image to WebP'));
+
+        const toBlobAsync = (quality: number) =>
+          new Promise<Blob | null>((res) =>
+            canvas.toBlob((b) => res(b), 'image/webp', quality)
+          );
+
+        try {
+          let quality = 0.9;
+          let blob: Blob | null = await toBlobAsync(quality);
+          if (!blob) {
+            reject(new Error('Failed to convert image to WebP'));
+            return;
+          }
+
+          if (!maxSizeKB) {
+            resolve(blob);
+            return;
+          }
+
+          const targetBytes = maxSizeKB * 1024;
+
+          while (blob.size > targetBytes && quality > 0.1) {
+            quality = Math.max(0.1, +(quality - 0.1).toFixed(2));
+            const newBlob = await toBlobAsync(quality);
+            if (newBlob) blob = newBlob;
+            else break;
+          }
+
+          if (blob.size > targetBytes) {
+            let scale = 0.9;
+            while (blob.size > targetBytes && scale > 0.1) {
+              const newWidth = Math.max(1, Math.round(img.width * scale));
+              const newHeight = Math.max(1, Math.round(img.height * scale));
+              canvas.width = newWidth;
+              canvas.height = newHeight;
+              const ctx2 = canvas.getContext('2d');
+              if (!ctx2) break;
+              ctx2.drawImage(img, 0, 0, newWidth, newHeight);
+
+              let q = 0.8;
+              let resizedBlob: Blob | null = await toBlobAsync(q);
+              while (resizedBlob && resizedBlob.size > targetBytes && q > 0.1) {
+                q = Math.max(0.1, +(q - 0.1).toFixed(2));
+                const next = await toBlobAsync(q);
+                if (next) resizedBlob = next;
+                else break;
+              }
+
+              if (resizedBlob) blob = resizedBlob;
+              scale = Math.max(0.1, +(scale - 0.1).toFixed(2));
             }
-          },
-          'image/webp',
-          0.9 // Quality (0-1)
-        );
+          }
+
+          if (blob) resolve(blob);
+          else reject(new Error('Failed to convert image to WebP'));
+        } catch (err) {
+          reject(err);
+        }
       };
-      
+
       img.onerror = () => {
         reject(new Error('Failed to load image'));
       };
-      
+
       img.src = e.target?.result as string;
     };
-    
+
     reader.onerror = () => {
       reject(new Error('Failed to read file'));
     };
-    
+
     reader.readAsDataURL(file);
   });
+};
+
+// Helper function to extract file path from Supabase storage URL
+const extractStoragePathFromUrl = (url: string): string | null => {
+  try {
+    // Match pattern: .../storage/v1/object/public/avatars/{path}
+    const match = url.match(/\/storage\/v1\/object\/public\/avatars\/(.+)$/);
+    return match ? match[1] : null;
+  } catch {
+    return null;
+  }
+};
+
+// Helper function to check if avatar is the default one
+const isDefaultAvatar = (avatarUrl: string): boolean => {
+  if (!avatarUrl) return true;
+  
+  // Check for various default avatar patterns
+  const defaultPatterns = [
+    '/default-avatar.webp',
+    'default%20profile.webp',
+    'default profile.webp'
+  ];
+  
+  return defaultPatterns.some(pattern => avatarUrl.includes(pattern));
 };
 
 export default function ProfileEdit() {
@@ -152,21 +220,21 @@ export default function ProfileEdit() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file type - accept JPEG, JPG, PNG
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    // Check file type - accept JPEG, JPG, PNG, WebP
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
       setErrors((prev) => ({ 
         ...prev, 
-        avatar: "File must be in JPEG, JPG, or PNG format" 
+        avatar: "File must be in JPEG, JPG, PNG, or WebP format" 
       }));
       return;
     }
 
-    // Check file size (before conversion)
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit for original file
+    // Check original file size (10MB limit before conversion)
+    if (file.size > 10 * 1024 * 1024) {
       setErrors((prev) => ({
         ...prev,
-        avatar: "File size must be less than 5MB",
+        avatar: "Original file size must be less than 10MB",
       }));
       return;
     }
@@ -175,22 +243,14 @@ export default function ProfileEdit() {
     setErrors((prev) => ({ ...prev, avatar: "" }));
 
     try {
-      console.log("🔄 Converting image to WebP...");
+      console.log(`🔄 Converting image to WebP... Original size: ${(file.size / 1024).toFixed(2)}KB`);
       
-      // Convert to WebP
-      const webpBlob = await convertImageToWebP(file);
+      // Convert to WebP with automatic compression (target: 50KB max)
+      const webpBlob = await convertImageToWebP(file, 50);
       
-      // Check converted file size
-      if (webpBlob.size > 50 * 1024) {
-        setErrors((prev) => ({
-          ...prev,
-          avatar: "Converted image is too large. Please use a smaller image.",
-        }));
-        setConvertingImage(false);
-        return;
-      }
-
-      console.log("✅ Image converted to WebP successfully");
+      const finalSizeKB = webpBlob.size / 1024;
+      console.log(`✅ Image converted successfully! Final size: ${finalSizeKB.toFixed(2)}KB`);
+      
       setAvatarFile(webpBlob);
 
       // Create preview
@@ -270,15 +330,18 @@ export default function ProfileEdit() {
 
       console.log("✅ User authenticated:", user.id);
 
-      // Upload avatar if selected
+      // Handle avatar upload and old avatar deletion
       let avatar_url = profile?.avatar_url || "/default-avatar.webp";
+      
       if (avatarFile) {
-        console.log("📤 Uploading avatar...");
-        const fileName = `${user.id}_${Date.now()}.webp`;
+        console.log("📤 Uploading new avatar...");
+        
+        // Step 1: Upload new avatar
+        const fileName = `avatars/${user.id}_${Date.now()}.webp`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from("avatars")
-          .upload(`avatars/${fileName}`, avatarFile, { 
-            upsert: true,
+          .upload(fileName, avatarFile, { 
+            upsert: false,  // Create new file, don't overwrite
             contentType: 'image/webp'
           });
 
@@ -289,15 +352,48 @@ export default function ProfileEdit() {
           return;
         }
 
+        console.log("✅ New avatar uploaded:", fileName);
+
+        // Step 2: Get public URL for new avatar
         const { data: publicData } = supabase.storage
           .from("avatars")
-          .getPublicUrl(`avatars/${fileName}`);
+          .getPublicUrl(fileName);
 
-        avatar_url = publicData.publicUrl;
-        console.log("✅ Avatar uploaded:", avatar_url);
+        const newAvatarUrl = publicData.publicUrl;
+        console.log("✅ New avatar URL:", newAvatarUrl);
+
+        // Step 3: Delete old avatar if it's not the default one
+        const oldAvatarUrl = profile?.avatar_url;
+        if (oldAvatarUrl && !isDefaultAvatar(oldAvatarUrl)) {
+          console.log("🗑️ Attempting to delete old avatar:", oldAvatarUrl);
+          
+          const oldFilePath = extractStoragePathFromUrl(oldAvatarUrl);
+          
+          if (oldFilePath) {
+            console.log("🗑️ Deleting old file from storage:", oldFilePath);
+            
+            const { error: deleteError } = await supabase.storage
+              .from("avatars")
+              .remove([oldFilePath]);
+
+            if (deleteError) {
+              console.warn("⚠️ Could not delete old avatar:", deleteError);
+              // Continue anyway - not a critical error
+            } else {
+              console.log("✅ Old avatar deleted successfully");
+            }
+          } else {
+            console.log("⚠️ Could not extract file path from old avatar URL");
+          }
+        } else {
+          console.log("ℹ️ Old avatar is default, no deletion needed");
+        }
+
+        // Use the new avatar URL
+        avatar_url = newAvatarUrl;
       }
 
-      // Prepare profile data (username excluded from update)
+      // Step 4: Update profile in database
       const profileData = {
         id: user.id,
         full_name: formData.full_name.trim(),
@@ -327,6 +423,13 @@ export default function ProfileEdit() {
       }
 
       console.log("✅ Profile updated successfully:", updatedProfile);
+
+      // Update local state
+      setProfile(updatedProfile);
+      setFormData({
+        ...formData,
+        avatar_url: updatedProfile.avatar_url
+      });
 
       setShowSuccessPopup(true);
 
@@ -434,7 +537,7 @@ export default function ProfileEdit() {
                   <div className={styles.avatarUpload}>
                     <input
                       type="file"
-                      accept="image/jpeg,image/jpg,image/png"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
                       onChange={handleAvatarChange}
                       className={styles.fileInput}
                       id="avatar-upload"
@@ -463,7 +566,7 @@ export default function ProfileEdit() {
                       </p>
                     )}
                     <p className={styles.helpText}>
-                      JPEG, JPG, or PNG (max 5MB) • Auto-converted to WebP
+                      JPEG, JPG, PNG, or WebP (max 10MB) • Auto-converted to WebP
                     </p>
                   </div>
                 </div>
