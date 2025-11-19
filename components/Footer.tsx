@@ -214,35 +214,46 @@ export default function Footer() {
           </div>
 
           <div className={styles.footerSection}>
-            <h3 className={styles.sectionTitle}>Practice Areas</h3>
+            <h3 className={styles.sectionTitle}>Publication Categories</h3>
             <ul className={styles.linkList}>
               <li>
                 <Link
-                  href="/tags/Corporate%20Law"
+                  href="/articles"
                   className={styles.footerLink}
                 >
-                  Corporate Law
+                  Articles
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/tags/Constitutional%20Law"
+                  href="/articles"
                   className={styles.footerLink}
                 >
-                  Constitutional Law
+                  Research Papers
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/tags/Employment%20Law"
+                  href="/articles"
                   className={styles.footerLink}
                 >
-                  Employment Law
+                  Legislative Comments
                 </Link>
               </li>
               <li>
-                <Link href="/tags/Real%20Estate" className={styles.footerLink}>
-                  Real Estate
+                <Link
+                  href="/articles"
+                  className={styles.footerLink}
+                >
+                  Case Commentaries
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/articles"
+                  className={styles.footerLink}
+                >
+                  Book Reviews
                 </Link>
               </li>
             </ul>
