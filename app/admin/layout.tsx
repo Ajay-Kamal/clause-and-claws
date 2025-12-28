@@ -12,7 +12,10 @@ const navItems = [
   { label: "Payments", href: "/admin/payments" },
   { label: "Published", href: "/admin/published" },
   { label: "Rejected", href: "/admin/rejected" },
-  { label: "Profiles", href: "/admin/profiles" }, // NEW
+  { label: "Profiles", href: "/admin/profiles" },
+  { label: "Mamage Events", href: "/admin/manage-events" },
+  { label: "Manage Polls", href: "/admin/manage-polls" },
+  { label: "Manage Discussions", href: "/admin/manage-discussions" },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
