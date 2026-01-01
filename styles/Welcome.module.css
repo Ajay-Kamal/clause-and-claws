@@ -190,17 +190,17 @@
 /* Mobile styles */
 @media (max-width: 480px) {
   .carouselImage {
-  width: 100%;
-  height: auto;
-  flex-grow: 5;
-  display: block;
-}
+    width: 100%;
+    height: auto;
+    flex-grow: 5;
+    display: block;
+  }
 
-.welcomeText {
-  left: 4%;
-  bottom: 4%;
-  right: 4%;
-}
+  .welcomeText {
+    left: 4%;
+    bottom: 4%;
+    right: 4%;
+  }
 
   .welcomeText h1 {
     font-size: 0rem;
@@ -213,7 +213,7 @@
     line-height: 1.4;
     max-width: 100%;
     text-align: center;
-    margin:auto;
+    margin: auto;
   }
 
   .btn-section {
@@ -222,7 +222,7 @@
     width: 100%;
     margin: auto;
     max-width: 280px;
-    margin-bottom:20px
+    margin-bottom: 20px;
   }
 
   .btn-primary,
@@ -274,73 +274,19 @@
   flex-direction: column;
   align-items: center;
   gap: 1.5rem;
+  min-height: fit-content;
+  justify-content: center;
 }
 
-.associationSection header {
+.rotatingText {
   color: #ffffff;
   text-align: center;
-  font-family: Arial, Helvetica, sans-serif, serif;
-  font-size:1.5rem;
-  letter-spacing: 0.2em;
-  font-weight: 400;
-  text-transform: uppercase;
-  margin: 0;
-}
-
-.associations {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
-  width: 100%;
-  max-width: 800px;
-  gap: 0;
-}
-
-.association1,
-.association2 {
-  color: #ffffff;
-  text-align: center;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
+  font-family: Garamond, serif;
+  font-size: 1.2rem;
+  line-height: 1.8;
+  max-width: 900px;
   padding: 0 2rem;
-}
-
-.association1 h1,
-.association2 h1 {
-  font-size: 1.5rem;
-  margin: 0;
-  font-weight: 400;
-  line-height: 1.3;
-  font-family: Georgia, serif;
-}
-
-.association1 p,
-.association2 p {
-  color: rgb(255, 217, 0);
-  font-size: 0.8rem;
-  letter-spacing: 0.15em;
-  margin: 0;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-.midLine {
-  width: 2px;
-  height: auto;
-  min-height: 60px;
-  background: linear-gradient(
-    to bottom,
-    transparent,
-    rgba(255, 255, 255, 0.5) 20%,
-    rgba(255, 255, 255, 0.5) 80%,
-    transparent
-  );
-  align-self: stretch;
+  transition: opacity 0.5s ease-in-out;
 }
 
 /* Responsive for Association Section */
@@ -351,67 +297,28 @@
 
   .associationSectionWrapper {
     gap: 1.2rem;
+    min-height: 100px;
   }
 
-  .associations {
-    flex-direction: column;
-    max-width: 500px;
-    gap: 1.5rem;
-  }
-
-  .association1,
-  .association2 {
-    padding: 0 1rem;
-  }
-
-  .association1 h1,
-  .association2 h1 {
-    font-size: 1.3rem;
-  }
-
-  .association1 p,
-  .association2 p {
-    font-size: 0.75rem;
-  }
-
-  .midLine {
-    width: 100%;
-    height: 2px;
-    min-height: auto;
-    background: linear-gradient(
-      to right,
-      transparent,
-      rgba(255, 255, 255, 0.5) 20%,
-      rgba(255, 255, 255, 0.5) 80%,
-      transparent
-    );
+  .rotatingText {
+    font-size: 1rem;
+    padding: 0 1.5rem;
+    max-width: 700px;
   }
 }
 
 @media (max-width: 480px) {
   .associationSection {
-    padding: 0.8rem 0.8rem;
+    padding: 1.5rem 0.8rem;
   }
 
-  .associationSection header {
-    font-size: 0.85rem;
-    letter-spacing: 0.15em;
+  .associationSectionWrapper {
+    min-height: 140px;
   }
 
-  .association1 h1,
-  .association2 h1 {
-    font-size: 1.1rem;
-  }
-
-  .association1 p,
-  .association2 p {
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-  }
-  .associations{
-    gap: 1rem;
-  }
-   .associationSectionWrapper {
-    gap: 0.5rem;
+  .rotatingText {
+    font-size: 0.9rem;
+    padding: 0 1rem;
+    line-height: 1.6;
   }
 }

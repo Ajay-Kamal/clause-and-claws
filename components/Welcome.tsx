@@ -14,6 +14,9 @@ const eb = EB_Garamond({
 
 export default function Welcome() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentPoint, setCurrentPoint] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+  
   const slides = [
     "./images/welcome-banner.svg",
     "./images/welcome-banner.svg",
@@ -21,12 +24,31 @@ export default function Welcome() {
     "./images/welcome-banner.svg",
   ];
 
+  const points = [
+    "Clause & Claws offers 100% free publication for all articles, because knowledge should never be behind a paywall.",
+    "Research Papers, Legislative Comments, Case Commentaries, and Book Reviews are subject to a transparent peer-review process.",
+    "A single review fee of just ₹700 covers submission of any two scholarly works.",
+    "Clause & Claws believes in merit-based publication, not pay-to-publish models."
+  ];
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 4000); // Change slide every 4 seconds
+    }, 4000);
 
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const pointTimer = setInterval(() => {
+      setIsVisible(false);
+      setTimeout(() => {
+        setCurrentPoint((prev) => (prev + 1) % points.length);
+        setIsVisible(true);
+      }, 500);
+    }, 5000);
+
+    return () => clearInterval(pointTimer);
   }, []);
 
   const goToSlide = (index: number) => {
@@ -85,21 +107,17 @@ export default function Welcome() {
         </div>
       </div>
       <div className={styles.associationSection}>
-        {/* <div className={styles.associationSectionWrapper}>
-          <header>IN ASSOCIATION WITH</header>
-          <div className={styles.associations}>
-            <div className={styles.association1}>
-              <h1>Trust Law Offices</h1>
-              <p>GLOBAL LEGAL PARTNER</p>
-            </div>
-            <div className={styles.midLine}></div>
-            <div className={styles.association2}>
-              <h1>Ministry of Law & Justice</h1>
-              <p>GOVERNMENT OF INDIA</p>
-            </div>
+        <div className={styles.associationSectionWrapper}>
+          <div 
+            className={styles.rotatingText}
+            style={{ 
+              opacity: isVisible ? 1 : 0,
+              transition: 'opacity 0.5s ease-in-out'
+            }}
+          >
+            {points[currentPoint]}
           </div>
-        </div> */}
-        <header><b>100% FREE publishing for articles</b></header>
+        </div>
       </div>
     </div>
   );
