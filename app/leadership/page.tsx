@@ -15,6 +15,7 @@ interface Author {
   total_views: number;
   total_likes: number;
   impact_score: number;
+  normalized_score: number; // 0-10 scale
 }
 
 export default function LeadershipPage() {
@@ -28,8 +29,33 @@ export default function LeadershipPage() {
 
   const calculateImpactScore = (articleCount: number, views: number, likes: number): number => {
     // Formula: (Articles * 50) + (Views * 2) + (Likes * 10)
-    // You can adjust these weights based on your preference
     return (articleCount * 50) + (views * 2) + (likes * 10);
+  };
+
+  const normalizeScores = (authors: Author[]): Author[] => {
+    // Find max score among authors with articles
+    const authorsWithArticles = authors.filter(a => a.article_count > 0);
+    
+    if (authorsWithArticles.length === 0) return authors;
+    
+    const maxScore = Math.max(...authorsWithArticles.map(a => a.impact_score));
+    const minScore = Math.min(...authorsWithArticles.map(a => a.impact_score));
+    
+    // Normalize: authors with 0 articles get 0, others get 1-10 scale
+    return authors.map(author => {
+      if (author.article_count === 0) {
+        return { ...author, normalized_score: 0 };
+      }
+      
+      // Scale from 1-10 for authors with articles
+      if (maxScore === minScore) {
+        // If all have same score, give them all 10
+        return { ...author, normalized_score: 10 };
+      }
+      
+      const normalized = 1 + ((author.impact_score - minScore) / (maxScore - minScore)) * 9;
+      return { ...author, normalized_score: parseFloat(normalized.toFixed(2)) };
+    });
   };
 
   const fetchLeadershipData = async () => {
@@ -65,12 +91,16 @@ export default function LeadershipPage() {
             total_views: totalViews,
             total_likes: totalLikes,
             impact_score: impactScore,
+            normalized_score: 0, // Will be calculated after
           };
         })
       );
 
+      // Normalize scores to 0-10 scale
+      const normalizedAuthors = normalizeScores(authorsWithStats);
+
       // Filter authors with at least one article and sort by impact score
-      const rankedAuthors = authorsWithStats
+      const rankedAuthors = normalizedAuthors
         .filter(author => author.article_count > 0)
         .sort((a, b) => b.impact_score - a.impact_score);
 
@@ -131,7 +161,7 @@ export default function LeadershipPage() {
 
             <div className={styles.impactScore}>
               <span className={styles.scoreLabel}>Impact Score:</span>
-              <span className={styles.scoreValue}>{author.impact_score}</span>
+              <span className={styles.scoreValue}>{author.normalized_score}</span>
             </div>
           </div>
         ))}

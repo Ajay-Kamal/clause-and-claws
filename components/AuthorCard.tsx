@@ -16,7 +16,7 @@ interface AuthorCardProps {
     bio?: string;
     follower_count?: number;
     articleCount?: number;
-    totalReads?: number;
+    impactScore?: number; // ← ADD THIS (0-10 normalized score)
   };
 }
 
@@ -83,10 +83,10 @@ export default function AuthorCard({
           <div className={styles.statLabel}>Follows</div>
         </div>
         <div className={styles.stat}>
-          <img src="/images/impact-icon.svg" alt=":O" />
-          <div className={styles.statValue}>{author.totalReads || 0}</div>
-          <div className={styles.statLabel}>Impact</div>
-        </div>
+            <img src="/images/impact-icon.svg" alt=":O" />
+            <div className={styles.statValue}>{author.impactScore?.toFixed(2) || '0.00'}</div>
+            <div className={styles.statLabel}>Impact Score</div>
+            </div>
       </div>
 
       {/* Actions */}

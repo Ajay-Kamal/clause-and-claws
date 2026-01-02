@@ -5,6 +5,39 @@ import styles from "../styles/FeaturedAuthors.module.css";
 import AuthorCard from "./AuthorCard";
 import Link from "next/link";
 
+// Helper function to calculate impact score
+const calculateImpactScore = (articleCount: number, views: number, likes: number): number => {
+  return (articleCount * 50) + (views * 2) + (likes * 10);
+};
+
+// Helper function to normalize scores to 0-10 scale
+const normalizeImpactScores = (authors: any[]) => {
+  const authorsWithArticles = authors.filter(a => a.articleCount > 0);
+  
+  if (authorsWithArticles.length === 0) {
+    return authors.map(a => ({ ...a, impactScore: 0 }));
+  }
+  
+  // Find max and min raw scores
+  const rawScores = authorsWithArticles.map(a => a.rawImpactScore);
+  const maxScore = Math.max(...rawScores);
+  const minScore = Math.min(...rawScores);
+  
+  return authors.map(author => {
+    if (author.articleCount === 0) {
+      return { ...author, impactScore: 0 };
+    }
+    
+    // Scale from 1-10 for authors with articles
+    if (maxScore === minScore) {
+      return { ...author, impactScore: 10 };
+    }
+    
+    const normalized = 1 + ((author.rawImpactScore - minScore) / (maxScore - minScore)) * 9;
+    return { ...author, impactScore: parseFloat(normalized.toFixed(2)) };
+  });
+};
+
 export default async function FeaturedAuthors() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
@@ -19,7 +52,7 @@ export default async function FeaturedAuthors() {
     }
   );
 
-  // Fetch featured authors with article count
+  // Fetch featured authors
   const { data: authors, error } = await supabase
     .from("profiles")
     .select("*")
@@ -32,30 +65,42 @@ export default async function FeaturedAuthors() {
     return null;
   }
 
-  // Fetch article counts and reads for each author
+  // ✅ UPDATED: Fetch article counts, views, AND likes for each author
   const authorsWithStats = await Promise.all(
     (authors || []).map(async (author) => {
       const { count: articleCount } = await supabase
         .from("articles")
         .select("*", { count: "exact", head: true })
         .eq("author_id", author.id)
-        .eq("published", true);
+        .eq("published", true)
+        .eq("approved", true);
 
+      // ✅ UPDATED: Fetch both views and likes
       const { data: articles } = await supabase
         .from("articles")
-        .select("views")
+        .select("views, likes")
         .eq("author_id", author.id)
-        .eq("published", true);
+        .eq("published", true)
+        .eq("approved", true);
 
-      const totalReads = articles?.reduce((sum, article) => sum + (article.views || 0), 0) || 0;
+      const totalViews = articles?.reduce((sum, article) => sum + (article.views || 0), 0) || 0;
+      const totalLikes = articles?.reduce((sum, article) => sum + (article.likes || 0), 0) || 0;
+
+      // ✅ UPDATED: Calculate raw impact score
+      const rawImpactScore = calculateImpactScore(articleCount || 0, totalViews, totalLikes);
 
       return {
         ...author,
         articleCount: articleCount || 0,
-        totalReads,
+        totalViews,
+        totalLikes,
+        rawImpactScore,
       };
     })
   );
+
+  // ✅ UPDATED: Normalize scores to 0-10 scale
+  const authorsWithNormalizedScores = normalizeImpactScores(authorsWithStats);
 
   return (
    <div className={styles.container}>
@@ -72,7 +117,7 @@ export default async function FeaturedAuthors() {
           </Link>
         </header>
         <div className={styles.authors}>
-          {authorsWithStats?.map((author) => (
+          {authorsWithNormalizedScores?.map((author) => (
             <AuthorCard key={author.id} author={author} />
           ))}
         </div>
