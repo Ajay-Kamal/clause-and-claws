@@ -58,10 +58,10 @@ export default async function FeaturedAuthors() {
   );
 
   return (
-    <div className={styles.container}>
+   <div className={styles.container}>
       <div className={styles.wrapper}>
         <header className={styles.header}>
-          <div>
+          <div> 
             <h1 className={styles.title}>Spotlight Authors</h1>
             <p className={styles.subtitle}>
               Leading scholars and practitioners shaping contemporary legal discourse
