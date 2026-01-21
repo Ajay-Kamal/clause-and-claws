@@ -10,24 +10,29 @@ interface ArticleCardProps {
   showReadButton?: boolean;
 }
 
-// const renderTags = (tags: string[] | string | null) => {
-//   if (!tags) return [];
-
-//   const tagArray = Array.isArray(tags)
-//     ? tags
-//     : typeof tags === "string"
-//     ? tags.split(",").map((tag) => tag.trim())
-//     : [];
-
-//   return tagArray.filter((tag) => tag.length > 0);
-// };
-
 export default function ArticleCard({
   article,
   showAuthor = true,
   showReadButton = true,
 }: ArticleCardProps) {
-  // const allTags = renderTags(article.tags);
+  // Calculate impact score: (Views × 2) + (Likes × 10)
+  const calculateImpactScore = () => {
+    const views = article.views || 0;
+    const likes = article.likes || 0;
+    const rawScore = (views * 2) + (likes * 10);
+    
+    // For normalization, we'll use a reasonable max value
+    // Adjust this based on your typical article stats
+    const maxPossibleScore = 5000; // e.g., 1000 views + 800 likes = 10000
+    
+    // Normalize to 1-10 scale (0 if no views/likes)
+    if (rawScore === 0) return 0;
+    
+    const normalized = Math.min(10, 1 + (rawScore / maxPossibleScore) * 9);
+    return parseFloat(normalized.toFixed(2));
+  };
+
+  const impactScore = calculateImpactScore();
 
   return (
     <div className={styles.card}>
@@ -45,54 +50,10 @@ export default function ArticleCard({
         <div className={styles.badges}>
           <span className={styles.featuredBadge}>{article.type}</span>
         </div>
-
-        {/* Bottom Stats Overlay */}
-        {/* <div className={styles.stats}>
-          <div className={styles.statsOverlay}>
-            <div className={styles.statItem}>
-              <img
-                src="./images/eye-icon.svg"
-                alt=""
-                className={styles.statIcon}
-              />
-              <span>{article.views || 0}</span>
-            </div>
-          </div>
-          <div className={styles.statsOverlay}>
-            <div className={styles.statItem}>
-              <img
-                src="./images/heart-icon.svg"
-                alt=""
-                className={styles.statIcon}
-              />
-              <span>{article.likes || 0}</span>
-            </div>
-          </div>
-        </div> */}
       </div>
 
       {/* Content */}
       <div className={styles.content}>
-        {/* Tags Section */}
-        {/* {allTags.length > 0 && (
-          <div className={styles.tagsSection}>
-            <div className={styles.tagsContainer}>
-              <div className={styles.tagsScrollable}>
-                {allTags.map((tag, index) => (
-                  <Link
-                    key={index}
-                    href={`/tags/${tag}`}
-                    className={styles.tagItem}
-                  >
-                    {tag}
-                  </Link>
-                ))}
-              </div>
-              <div className={styles.fadeOverlay}></div>
-            </div>
-          </div>
-        )} */}
-
         {/* Title */}
         <h3 className={styles.title}>
           <Link href={`/articles/${article.slug}`} className={styles.titleLink}>
@@ -129,13 +90,13 @@ export default function ArticleCard({
 
         <div className={styles.statistics}>
           <div>
-            Reads <p>{article.views}</p>
+            Reads <p>{article.views || 0}</p>
           </div>
           <div>
-            Likes <p>{article.likes}</p>
+            Likes <p>{article.likes || 0}</p>
           </div>
           <div>
-            Impact <p>100</p>
+            Impact <p>{impactScore}</p>
           </div>
         </div>
 
