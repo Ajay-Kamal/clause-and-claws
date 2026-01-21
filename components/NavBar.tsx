@@ -197,7 +197,7 @@ export default function NavBar() {
             {/* Logo */}
             <div className={styles.navbarLogo}>
               <Link href="/" className={styles.logo}>
-                <img src="/images/logo-cc.svg" alt="Logo" />
+                <img src="/images/logo-cc-red.svg" alt="Logo" />
               </Link>
             </div>
 
