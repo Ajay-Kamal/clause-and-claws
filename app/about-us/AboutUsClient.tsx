@@ -23,7 +23,7 @@ const adminData: Admin[] = [
   {
     id: 1,
     name: "Rudransh Rajput",
-    title: "Co-Founder",
+    title: "Founder",
     email: "Info.clauseandclaws@gmail.com",
     linkedin: "http://www.linkedin.com/in/rudransh-rajput",
     profileImage: "/images/rudransh-bhaiya.jpg",
@@ -42,42 +42,42 @@ const adminData: Admin[] = [
       "Developed application Student First- a student centric mobile application.",
     ],
   },
-  {
-    id: 2,
-    name: "Purav Garg",
-    title: "Co-Founder",
-    email: "puravgarg0786@gmail.com",
-    linkedin: "https://www.linkedin.com/in/purav-garg-a27925267",
-    profileImage: "/images/purav-bhaiya.jpg",
-    bio: "I am Purav Garg, Co-Founder of this online legal publication platform, committed to building a space where law and ideas converge. As a law student with a keen interest in legal research, policy, and practical application of jurisprudence, I have dedicated my academic journey towards understanding how legal frameworks shape society and governance.Through internships and academic engagements, I have gained exposure across diverse areas of law, ranging from constitutional principles and criminal law to corporate regulations and dispute resolution. These experiences have strengthened my conviction that law must be accessible, well-disseminated, and critically analyzed in order to truly serve its purpose.",
-    expertise: [
-      "Data Privacy Law",
-      "Cybersecurity",
-      "Competition Law",
-      "Constitutional Law",
-      "Arbiration Law",
-    ],
-    achievements: [
-      "Authored multiple Articles and Research Reports.",
-      "Former Research Manager.",
-      "Drafting Wizard and Experienced in peer-reviewing.",
-      "Data Privacy Professional.",
-    ],
-  },
-  {
-    id: 3,
-    name: "Venkat Murali Avugaddi",
-    title: "Chief Technical Officer",
-    email: "venkatmuraliavugaddi@gmail.com",
-    linkedin: "https://www.linkedin.com/in/murali-avugaddi-918904269/",
-    profileImage: "/images/murali-anna.jpg",
-    bio: "I am Avugaddi Venkat Murali, co‑founder of this online legal publication platform here in India. I am also building my agency, Avugaddi Software Systems. Through our agency, we designed and developed Clause and Claws entirely from the ground up. From constructing the full-stack architecture to creating intuitive user experiences, every aspect of this product reflects innovation, usability, and reliability. Clause and Claws is the first product launched under my agency, representing my vision of blending technology with meaningful impact—creating a digital space where law, research, and fresh ideas can thrive. As a student passionate about technology and design, I focus on learning and applying modern development and UX/UI techniques. Through this initiative, I aim to combine creativity and problem-solving to support the legal community and lay a foundation for future products and services as my agency grows.",
-    expertise: ["UI/UX Design", "Flutter","Backend Development","Spring Boot"],
-    achievements: [
-      "Co‑founded an online legal publication platform in India.",
-      "Building Avugaddi Software Systems, a student‑led digital agency."
-    ],
-  }
+  // {
+  //   id: 2,
+  //   name: "Purav Garg",
+  //   title: "Co-Founder",
+  //   email: "puravgarg0786@gmail.com",
+  //   linkedin: "https://www.linkedin.com/in/purav-garg-a27925267",
+  //   profileImage: "/images/purav-bhaiya.jpg",
+  //   bio: "I am Purav Garg, Co-Founder of this online legal publication platform, committed to building a space where law and ideas converge. As a law student with a keen interest in legal research, policy, and practical application of jurisprudence, I have dedicated my academic journey towards understanding how legal frameworks shape society and governance.Through internships and academic engagements, I have gained exposure across diverse areas of law, ranging from constitutional principles and criminal law to corporate regulations and dispute resolution. These experiences have strengthened my conviction that law must be accessible, well-disseminated, and critically analyzed in order to truly serve its purpose.",
+  //   expertise: [
+  //     "Data Privacy Law",
+  //     "Cybersecurity",
+  //     "Competition Law",
+  //     "Constitutional Law",
+  //     "Arbiration Law",
+  //   ],
+  //   achievements: [
+  //     "Authored multiple Articles and Research Reports.",
+  //     "Former Research Manager.",
+  //     "Drafting Wizard and Experienced in peer-reviewing.",
+  //     "Data Privacy Professional.",
+  //   ],
+  // },
+  // {
+  //   id: 3,
+  //   name: "Venkat Murali Avugaddi",
+  //   title: "Chief Technical Officer",
+  //   email: "venkatmuraliavugaddi@gmail.com",
+  //   linkedin: "https://www.linkedin.com/in/murali-avugaddi-918904269/",
+  //   profileImage: "/images/murali-anna.jpg",
+  //   bio: "I am Avugaddi Venkat Murali, co‑founder of this online legal publication platform here in India. I am also building my agency, Avugaddi Software Systems. Through our agency, we designed and developed Clause and Claws entirely from the ground up. From constructing the full-stack architecture to creating intuitive user experiences, every aspect of this product reflects innovation, usability, and reliability. Clause and Claws is the first product launched under my agency, representing my vision of blending technology with meaningful impact—creating a digital space where law, research, and fresh ideas can thrive. As a student passionate about technology and design, I focus on learning and applying modern development and UX/UI techniques. Through this initiative, I aim to combine creativity and problem-solving to support the legal community and lay a foundation for future products and services as my agency grows.",
+  //   expertise: ["UI/UX Design", "Flutter","Backend Development","Spring Boot"],
+  //   achievements: [
+  //     "Co‑founded an online legal publication platform in India.",
+  //     "Building Avugaddi Software Systems, a student‑led digital agency."
+  //   ],
+  // }
 ];
 
 const LinkedInIcon = () => (
@@ -274,8 +274,7 @@ export default function AboutUsClient() {
       <section className={styles.teamSection}>
         <div className={styles.container}>
           <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Editorial Leadership</h2>
-            <p className={styles.sectionSubtitle}>Meet the Founders</p>
+            <h2 className={styles.sectionTitle}>Meet the Founder</h2>
           </div>
           <div className={styles.adminsGrid}>
             {adminData.map((admin) => (

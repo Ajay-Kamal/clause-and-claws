@@ -18,17 +18,18 @@ export default function Welcome() {
   const [isVisible, setIsVisible] = useState(true);
   
   const slides = [
-    "./images/welcome-banner.svg",
-    "./images/welcome-banner.svg",
-    "./images/welcome-banner.svg",
-    "./images/welcome-banner.svg",
+    { image: "./images/welcome-banner.svg", showText: true },
+    { image: "./images/welcome-banner.svg", showText: true },
+    { image: "./images/welcome-banner.svg", showText: true },
+    { image: "./images/welcome-banner.svg", showText: true },
   ];
 
   const points = [
     "Clause & Claws offers 100% free publication for all articles, because knowledge should never be behind a paywall.",
     "Research Papers, Legislative Comments, Case Commentaries, and Book Reviews are subject to a transparent peer-review process.",
     "A single review fee of just ₹700 covers submission of any two scholarly works.",
-    "Clause & Claws believes in merit-based publication, not pay-to-publish models."
+    "Clause & Claws believes in merit-based publication, not pay-to-publish models.",
+    "Collaborated with Trustlaw.in to provide pro bono legal research support to NGOs and social enterprises.",
   ];
 
   useEffect(() => {
@@ -64,11 +65,14 @@ export default function Welcome() {
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
             {slides.map((slide, index) => (
-              <img
+              <div
                 key={index}
-                src={slide}
-                alt="WELCOME"
                 className={styles.carouselImage}
+                style={{
+                  backgroundImage: `url(${slide.image})`
+                }}
+                role="img"
+                aria-label="WELCOME"
               />
             ))}
           </div>
@@ -85,7 +89,14 @@ export default function Welcome() {
             ))}
           </div>
         </div>
-        <div className={styles.welcomeText}>
+        <div 
+          className={styles.welcomeText}
+          style={{
+            opacity: slides[currentSlide].showText ? 1 : 0,
+            visibility: slides[currentSlide].showText ? 'visible' : 'hidden',
+            transition: 'opacity 0.3s ease-in-out'
+          }}
+        >
           <h1>Where Clauses Speak,</h1>
           <h1>and Claws Create Change</h1>
           <p>
