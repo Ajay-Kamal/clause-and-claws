@@ -694,9 +694,9 @@
 
 .draftButton {
   flex: 1;
-  background: #F0E6D2;
-  color: #2C3E50;
-  border: 2px solid #D4C4A8;
+  background: #f0e6d2;
+  color: #2c3e50;
+  border: 2px solid #d4c4a8;
   padding: 0.875rem 2rem;
   border-radius: 8px;
   font-size: 1rem;
@@ -707,8 +707,8 @@
 }
 
 .draftButton:hover:not(:disabled) {
-  background: #E8D8B8;
-  border-color: #C4B498;
+  background: #e8d8b8;
+  border-color: #c4b498;
   transform: translateY(-1px);
 }
 
@@ -720,8 +720,8 @@
 
 .submitButton {
   flex: 1;
-  background: #FFD700;
-  color: #2C3E50;
+  background: #ffd700;
+  color: #2c3e50;
   border: none;
   padding: 0.875rem 2rem;
   border-radius: 8px;
@@ -733,7 +733,7 @@
 }
 
 .submitButton:hover:not(:disabled) {
-  background: #F0C800;
+  background: #f0c800;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
 }
@@ -749,7 +749,7 @@
   .buttonContainer {
     flex-direction: column;
   }
-  
+
   .draftButton,
   .submitButton {
     width: 100%;
@@ -810,6 +810,56 @@
 
 .viewGuidelinesButton:active {
   transform: translateY(0);
+}
+
+/* Consent styles */
+.consentContainer {
+  padding: 16px 0;
+}
+
+.consentBox {
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(68, 72, 89, 0.06);
+}
+
+.consentText {
+  max-height: 12rem;
+  overflow: auto;
+  font-family: "Arial", "Roboto", "Open Sans", system-ui, sans-serif;
+  font-size: 14px;
+  color: #000000;
+  line-height: 1.75;
+  padding-bottom: 12px;
+}
+
+.consentText ul {
+  list-style-type: lower-roman;
+  padding-left: 20px;
+  margin-top: 8px;
+}
+
+.consentLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.consentCheckbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #ffc107;
+}
+
+.consentError {
+  color: #dc3545;
+  margin-top: 8px;
+  font-weight: 600;
 }
 
 /* ✅ REMOVE THE OLD .guidelines, .guidelinesTitle, .guidelinesList STYLES */

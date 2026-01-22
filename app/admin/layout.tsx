@@ -13,6 +13,7 @@ const navItems = [
   { label: "Published", href: "/admin/published" },
   { label: "Rejected", href: "/admin/rejected" },
   { label: "Profiles", href: "/admin/profiles" },
+  { label: "Spotlight Authors", href: "/admin/spotlight-authors" },
   { label: "Mamage Events", href: "/admin/manage-events" },
   { label: "Manage Polls", href: "/admin/manage-polls" },
   { label: "Manage Discussions", href: "/admin/manage-discussions" },

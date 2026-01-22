@@ -102,7 +102,7 @@ const LAW_CATEGORIES = {
     "Maritime & Space Governance",
     "Global Humanitarian Law",
     "South Asian Geopolitics",
-  ] 
+  ],
 };
 
 export default function UploadArticle() {
@@ -115,6 +115,7 @@ export default function UploadArticle() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [convertingImage, setConvertingImage] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -138,10 +139,60 @@ export default function UploadArticle() {
       avatar_url: string;
     }>
   >([]);
+  const [consentChecked, setConsentChecked] = useState(false);
 
   const DEFAULT_THUMBNAIL =
     process.env.NEXT_PUBLIC_DEFAULT_THUMBNAIL_URL ??
     "https://rvydvbikckoourvzhyml.supabase.co/storage/v1/object/public/thumbnails/default%20thubnail.webp";
+
+  // Function to convert image to WebP
+  const convertToWebP = async (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            reject(new Error("Failed to get canvas context"));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0);
+
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error("Failed to convert image"));
+                return;
+              }
+
+              const webpFile = new File(
+                [blob],
+                file.name.replace(/\.(jpe?g|png)$/i, ".webp"),
+                { type: "image/webp" }
+              );
+
+              resolve(webpFile);
+            },
+            "image/webp",
+            0.9 // Quality setting (0-1)
+          );
+        };
+
+        img.onerror = () => reject(new Error("Failed to load image"));
+        img.src = e.target?.result as string;
+      };
+
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    });
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -245,14 +296,49 @@ export default function UploadArticle() {
     setErrors((prev) => ({ ...prev, file: "" }));
   };
 
-  const handleThumbnailSelect = (file: File) => {
-    const error = validateThumbnail(file);
-    if (error) {
-      setErrors((prev) => ({ ...prev, thumbnail: error }));
-      return;
+  const handleThumbnailSelect = async (file: File) => {
+    // Check if file is JPEG/JPG and needs conversion
+    if (file.type === "image/jpeg" || file.type === "image/jpg") {
+      setConvertingImage(true);
+      setErrors((prev) => ({ ...prev, thumbnail: "" }));
+
+      try {
+        const webpFile = await convertToWebP(file);
+
+        // Validate the converted WebP file
+        const error = validateThumbnail(webpFile);
+        if (error) {
+          setErrors((prev) => ({ ...prev, thumbnail: error }));
+          setConvertingImage(false);
+          return;
+        }
+
+        setFormData((prev) => ({ ...prev, thumbnail: webpFile }));
+        setErrors((prev) => ({ ...prev, thumbnail: "" }));
+      } catch (error) {
+        console.error("Conversion error:", error);
+        setErrors((prev) => ({
+          ...prev,
+          thumbnail: "Failed to convert image to WebP format",
+        }));
+      } finally {
+        setConvertingImage(false);
+      }
+    } else if (file.type === "image/webp") {
+      // Already WebP, just validate
+      const error = validateThumbnail(file);
+      if (error) {
+        setErrors((prev) => ({ ...prev, thumbnail: error }));
+        return;
+      }
+      setFormData((prev) => ({ ...prev, thumbnail: file }));
+      setErrors((prev) => ({ ...prev, thumbnail: "" }));
+    } else {
+      setErrors((prev) => ({
+        ...prev,
+        thumbnail: "Please upload a JPEG, JPG, or WebP image",
+      }));
     }
-    setFormData((prev) => ({ ...prev, thumbnail: file }));
-    setErrors((prev) => ({ ...prev, thumbnail: "" }));
   };
 
   const handleTagSelect = (tag: string) => {
@@ -430,6 +516,13 @@ export default function UploadArticle() {
     if (!user) {
       alert("Please sign in before submitting an article.");
       setShowGoogleModal(true);
+      return;
+    }
+    if (!consentChecked) {
+      setErrors({
+        ...errors,
+        consent: "You must accept the copyright agreement to submit.",
+      });
       return;
     }
     setErrors({});
@@ -673,15 +766,15 @@ export default function UploadArticle() {
             </select>
           </div>
 
-          {/* ✅ REPLACED GUIDELINES SECTION WITH BUTTON */}
           <div className={styles.guidelinesButton}>
             <h3 className={styles.guidelinesButtonTitle}>Before You Submit</h3>
             <p className={styles.guidelinesButtonText}>
-              Please review our comprehensive submission guidelines to ensure your manuscript meets all requirements.
+              Please review our comprehensive submission guidelines to ensure
+              your manuscript meets all requirements.
             </p>
             <button
               type="button"
-              onClick={() => router.push('/guidelines')}
+              onClick={() => router.push("/guidelines")}
               className={styles.viewGuidelinesButton}
             >
               View Submission Guidelines
@@ -925,8 +1018,13 @@ export default function UploadArticle() {
 
           <div className={styles.fieldGroup}>
             <label className={styles.label}>
-              Thumbnail (Optional) — WebP, max 100 KB
+              Thumbnail (Optional) — JPEG, JPG, or WebP | max 100 KB
             </label>
+            {convertingImage && (
+              <p className={styles.convertingText}>
+                Converting image to WebP format...
+              </p>
+            )}
             <div
               className={`${styles.thumbnailDropZone} ${
                 thumbDragActive
@@ -972,7 +1070,7 @@ export default function UploadArticle() {
                       <input
                         type="file"
                         className={styles.hiddenInput}
-                        accept="image/webp"
+                        accept="image/webp,image/jpeg,image/jpg"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) handleThumbnailSelect(file);
@@ -981,7 +1079,10 @@ export default function UploadArticle() {
                     </label>
                   </p>
                   <p className={styles.supportedFormats}>
-                    Supported: WebP only | Max size: 100 KB
+                    Supported: JPEG, JPG, WebP | Max size: 100 KB
+                  </p>
+                  <p className={styles.supportedFormats}>
+                    JPEG/JPG images will be automatically converted to WebP
                   </p>
                   <p className={styles.supportedFormats}>
                     If you don't upload a thumbnail, a default thumbnail will be
@@ -1016,6 +1117,64 @@ export default function UploadArticle() {
             <div className={styles.errorAlert}>{errors._form}</div>
           )}
 
+          <div className={styles.consentContainer}>
+            <div className={styles.consentBox}>
+              <div className={styles.consentText}>
+                <strong>
+                  I hereby irrevocably assign the copyright of the manuscript to
+                  the Clause and Claws.
+                </strong>
+                <ul>
+                  <li>
+                    The Editor-in-Chief of the Clause and Claws reserves the
+                    right to transfer the copyright to a publisher at their
+                    discretion.
+                  </li>
+                  <li>
+                    The author(s) retain all proprietary rights, including
+                    patent rights and the right to utilize the article in future
+                    works; prior written permission from the Editor-in-Chief is
+                    required for third-party republication.
+                  </li>
+                  <li>
+                    The material presented is original and does not incorporate
+                    other copyrighted content without authorization; such
+                    material is properly cited.
+                  </li>
+                  <li>
+                    The final version is not substantially similar to previously
+                    published works by the author.
+                  </li>
+                  <li>
+                    The author may post their version of the article with proper
+                    acknowledgment and a hyperlink to the published article on
+                    the Clause and Claws website.
+                  </li>
+                  <li>
+                    If plagiarism is identified after publication, the author
+                    bears full responsibility and absolves Clause and Claws
+                    Board members of liability.
+                  </li>
+                </ul>
+              </div>
+              <label className={styles.consentLabel}>
+                <input
+                  type="checkbox"
+                  checked={consentChecked}
+                  onChange={(e) => {
+                    setConsentChecked(e.target.checked);
+                    setErrors((prev) => ({ ...prev, consent: "" }));
+                  }}
+                  className={styles.consentCheckbox}
+                />
+                I have read, understood, and agree to the terms above.
+              </label>
+              {errors.consent && (
+                <p className={styles.consentError}>{errors.consent}</p>
+              )}
+            </div>
+          </div>
+
           <div className={styles.buttonContainer}>
             <button
               type="button"
@@ -1025,6 +1184,7 @@ export default function UploadArticle() {
                 uploading ||
                 loading ||
                 savingDraft ||
+                convertingImage ||
                 !user ||
                 !formData.title.trim()
               }
@@ -1037,9 +1197,11 @@ export default function UploadArticle() {
               disabled={
                 uploading ||
                 savingDraft ||
+                convertingImage ||
                 !formData.title.trim() ||
                 !formData.abstract.trim() ||
-                !formData.file
+                !formData.file ||
+                !consentChecked
               }
               className={styles.submitButton}
             >

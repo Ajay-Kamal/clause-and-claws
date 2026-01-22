@@ -65,6 +65,50 @@ export default async function FeaturedAuthors() {
     return null;
   }
 
+  // If no spotlight authors, show empty state
+  if (!authors || authors.length === 0) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.wrapper}>
+          <header className={styles.header}>
+            <div> 
+              <h1 className={styles.title}>Spotlight Authors</h1>
+              <p className={styles.subtitle}>
+                Leading scholars and practitioners shaping contemporary legal discourse
+              </p>
+            </div>
+            <Link href="/authors" className={styles.viewAllBtn}>
+              View More
+            </Link>
+          </header>
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>
+              <svg 
+                width="80" 
+                height="80" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="1.5"
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            </div>
+            <h3 className={styles.emptyTitle}>No Spotlight Authors Yet</h3>
+            <p className={styles.emptyText}>
+              Spotlight authors haven't been selected yet. Check back soon to discover featured legal scholars and practitioners.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // ✅ UPDATED: Fetch article counts, views, AND likes for each author
   const authorsWithStats = await Promise.all(
     (authors || []).map(async (author) => {
