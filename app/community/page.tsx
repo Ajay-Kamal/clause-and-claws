@@ -34,6 +34,7 @@ interface Event {
   event_date: string;
   location: string;
   registered_count: number;
+  status: string;
 }
 
 interface Poll {
@@ -47,6 +48,7 @@ interface Poll {
   expiry_date: string;
   total_votes: number;
   created_at: string;
+  status: string;
 }
 
 interface Comment {
@@ -90,6 +92,26 @@ const CommunityHub: React.FC = () => {
   const [selectedDiscussion, setSelectedDiscussion] = useState<Discussion | null>(null);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
+
+  // Create Event Modal
+  const [showCreateEventModal, setShowCreateEventModal] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    type_of: "Webinar",
+    title: "",
+    description: "",
+    link: "",
+    expiry_date_for_registration: "",
+    event_date: "",
+    location: "",
+  });
+
+  // Create Poll Modal
+  const [showCreatePollModal, setShowCreatePollModal] = useState(false);
+  const [newPoll, setNewPoll] = useState({
+    question: "",
+    options: ["", ""],
+    expiry_date: "",
+  });
 
   useEffect(() => {
     fetchUser();
@@ -156,6 +178,7 @@ const CommunityHub: React.FC = () => {
     const { count: upcomingEvents } = await supabase
       .from("events")
       .select("*", { count: "exact", head: true })
+      .eq("status", "approved")
       .gte("event_date", new Date().toISOString());
 
     setMembersCount(members || 0);
@@ -178,7 +201,6 @@ const CommunityHub: React.FC = () => {
     if (error) {
       console.error("Error fetching discussions:", error);
     } else {
-      console.log("Discussions fetched:", data);
       setDiscussions(data || []);
     }
   };
@@ -187,6 +209,7 @@ const CommunityHub: React.FC = () => {
     const { data } = await supabase
       .from("events")
       .select("*")
+      .eq("status", "approved")
       .order("event_date", { ascending: true });
     setEvents(data || []);
   };
@@ -195,12 +218,12 @@ const CommunityHub: React.FC = () => {
     const { data, error } = await supabase
       .from("polls")
       .select("*")
+      .eq("status", "approved")
       .order("created_at", { ascending: false });
     
     if (error) {
       console.error("Error fetching polls:", error);
     } else {
-      console.log("Polls fetched:", data);
       setPolls(data || []);
     }
   };
@@ -226,6 +249,77 @@ const CommunityHub: React.FC = () => {
     }
   };
 
+  const handleCreateEvent = async () => {
+    if (!user || !newEvent.title || !newEvent.description) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const { error } = await supabase.from("events").insert({
+      ...newEvent,
+      created_by: user.id,
+      status: "pending",
+    });
+
+    if (error) {
+      console.error("Error creating event:", error);
+      alert("Failed to create event");
+    } else {
+      setShowCreateEventModal(false);
+      setNewEvent({
+        type_of: "Webinar",
+        title: "",
+        description: "",
+        link: "",
+        expiry_date_for_registration: "",
+        event_date: "",
+        location: "",
+      });
+      alert("Event submitted for admin approval! You won't receive a notification if it's rejected.");
+    }
+  };
+
+  const handleCreatePoll = async () => {
+    if (!user || !newPoll.question) {
+      alert("Please fill in all required fields");
+      return;
+    }
+
+    const filteredOptions = newPoll.options.filter((opt) => opt.trim() !== "");
+    
+    if (filteredOptions.length < 2) {
+      alert("Please provide at least 2 options");
+      return;
+    }
+
+    const pollOptions = filteredOptions.map((opt, idx) => ({
+      id: `opt${idx + 1}`,
+      text: opt,
+      votes: 0,
+    }));
+
+    const { error } = await supabase.from("polls").insert({
+      question: newPoll.question,
+      options: pollOptions,
+      expiry_date: newPoll.expiry_date,
+      created_by: user.id,
+      status: "pending",
+    });
+
+    if (error) {
+      console.error("Error creating poll:", error);
+      alert("Failed to create poll");
+    } else {
+      setShowCreatePollModal(false);
+      setNewPoll({
+        question: "",
+        options: ["", ""],
+        expiry_date: "",
+      });
+      alert("Poll submitted for admin approval! You won't receive a notification if it's rejected.");
+    }
+  };
+
   const handleLikeDiscussion = async (discussionId: string) => {
     if (!user) {
       alert("Please sign in to like discussions");
@@ -236,7 +330,6 @@ const CommunityHub: React.FC = () => {
 
     try {
       if (isLiked) {
-        // Unlike
         const { error } = await supabase
           .from("discussion_likes")
           .delete()
@@ -249,12 +342,10 @@ const CommunityHub: React.FC = () => {
           return;
         }
 
-        // Update local state
         const newLikes = new Set(userLikes);
         newLikes.delete(discussionId);
         setUserLikes(newLikes);
       } else {
-        // Like
         const { error } = await supabase
           .from("discussion_likes")
           .insert({
@@ -268,13 +359,11 @@ const CommunityHub: React.FC = () => {
           return;
         }
 
-        // Update local state
         const newLikes = new Set(userLikes);
         newLikes.add(discussionId);
         setUserLikes(newLikes);
       }
 
-      // Refresh discussions to get updated counts
       await fetchDiscussions();
     } catch (error) {
       console.error("Unexpected error:", error);
@@ -358,15 +447,11 @@ const CommunityHub: React.FC = () => {
         return;
       }
 
-      // Update local state
       const newVotes = new Set(userVotes);
       newVotes.add(pollId);
       setUserVotes(newVotes);
 
-      // Wait for trigger to execute
       await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Refresh polls
       await fetchPolls();
       
       alert("Vote recorded successfully!");
@@ -390,6 +475,31 @@ const CommunityHub: React.FC = () => {
     setNewDiscussion({
       ...newDiscussion,
       tags: newDiscussion.tags.filter((t) => t !== tag),
+    });
+  };
+
+  const addPollOption = () => {
+    setNewPoll({
+      ...newPoll,
+      options: [...newPoll.options, ""],
+    });
+  };
+
+  const removePollOption = (index: number) => {
+    if (newPoll.options.length > 2) {
+      setNewPoll({
+        ...newPoll,
+        options: newPoll.options.filter((_, i) => i !== index),
+      });
+    }
+  };
+
+  const updatePollOption = (index: number, value: string) => {
+    const newOptions = [...newPoll.options];
+    newOptions[index] = value;
+    setNewPoll({
+      ...newPoll,
+      options: newOptions,
     });
   };
 
@@ -571,6 +681,15 @@ const CommunityHub: React.FC = () => {
         {/* Events Tab */}
         {activeTab === "events" && (
           <div className={styles.eventsContainer}>
+            {user && (
+              <button
+                className={styles.createBtn}
+                onClick={() => setShowCreateEventModal(true)}
+              >
+                + Create an Event
+              </button>
+            )}
+
             <div className={styles.eventsList}>
               {events.map((event) => {
                 const dateInfo = formatEventDate(event.event_date);
@@ -629,6 +748,15 @@ const CommunityHub: React.FC = () => {
         {/* Polls Tab */}
         {activeTab === "polls" && (
           <div className={styles.pollsContainer}>
+            {user && (
+              <button
+                className={styles.createBtn}
+                onClick={() => setShowCreatePollModal(true)}
+              >
+                + Create a Poll
+              </button>
+            )}
+
             <div className={styles.pollsList}>
               {polls.map((poll) => {
                 const isExpired = new Date(poll.expiry_date) < new Date();
@@ -748,6 +876,177 @@ const CommunityHub: React.FC = () => {
               </button>
               <button className={styles.submitBtn} onClick={handleCreateDiscussion}>
                 Post Discussion
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Event Modal */}
+      {showCreateEventModal && (
+        <div className={styles.modal} onClick={() => setShowCreateEventModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h2 className={styles.modalTitle}>Create New Event</h2>
+            
+            <div style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "600" }}>
+                Event Type
+              </label>
+              <select
+                value={newEvent.type_of}
+                onChange={(e) => setNewEvent({ ...newEvent, type_of: e.target.value })}
+                className={styles.input}
+              >
+                <option value="Webinar">Webinar</option>
+                <option value="Conference">Conference</option>
+                <option value="Workshop">Workshop</option>
+                <option value="Seminar">Seminar</option>
+              </select>
+            </div>
+
+            <input
+              type="text"
+              placeholder="Event Title"
+              className={styles.input}
+              value={newEvent.title}
+              onChange={(e) => setNewEvent({ ...newEvent, title: e.target.value })}
+            />
+
+            <textarea
+              placeholder="Event Description"
+              className={styles.textarea}
+              value={newEvent.description}
+              onChange={(e) => setNewEvent({ ...newEvent, description: e.target.value })}
+              rows={4}
+            />
+
+            <input
+              type="url"
+              placeholder="Registration Link (https://...)"
+              className={styles.input}
+              value={newEvent.link}
+              onChange={(e) => setNewEvent({ ...newEvent, link: e.target.value })}
+            />
+
+            <div style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "600", fontSize: "0.875rem" }}>
+                Event Date
+              </label>
+              <input
+                type="datetime-local"
+                className={styles.input}
+                value={newEvent.event_date}
+                onChange={(e) => setNewEvent({ ...newEvent, event_date: e.target.value })}
+              />
+            </div>
+
+            <div style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "600", fontSize: "0.875rem" }}>
+                Registration Deadline
+              </label>
+              <input
+                type="datetime-local"
+                className={styles.input}
+                value={newEvent.expiry_date_for_registration}
+                onChange={(e) =>
+                  setNewEvent({ ...newEvent, expiry_date_for_registration: e.target.value })
+                }
+              />
+            </div>
+
+            <input
+              type="text"
+              placeholder="Location (Online or Physical)"
+              className={styles.input}
+              value={newEvent.location}
+              onChange={(e) => setNewEvent({ ...newEvent, location: e.target.value })}
+            />
+
+            <div className={styles.modalActions}>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => setShowCreateEventModal(false)}
+              >
+                Cancel
+              </button>
+              <button className={styles.submitBtn} onClick={handleCreateEvent}>
+                Submit for Approval
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Poll Modal */}
+      {showCreatePollModal && (
+        <div className={styles.modal} onClick={() => setShowCreatePollModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h2 className={styles.modalTitle}>Create New Poll</h2>
+            
+            <input
+              type="text"
+              placeholder="Poll Question"
+              className={styles.input}
+              value={newPoll.question}
+              onChange={(e) => setNewPoll({ ...newPoll, question: e.target.value })}
+            />
+
+            <div style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "600" }}>
+                Poll Options
+              </label>
+              {newPoll.options.map((option, index) => (
+                <div key={index} style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                  <input
+                    type="text"
+                    value={option}
+                    onChange={(e) => updatePollOption(index, e.target.value)}
+                    placeholder={`Option ${index + 1}`}
+                    className={styles.input}
+                    style={{ marginBottom: 0 }}
+                  />
+                  {newPoll.options.length > 2 && (
+                    <button
+                      type="button"
+                      onClick={() => removePollOption(index)}
+                      className={styles.deleteBtn}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addPollOption}
+                className={styles.addTagBtn}
+                style={{ marginTop: "0.5rem" }}
+              >
+                + Add Option
+              </button>
+            </div>
+
+            <div style={{ marginBottom: "1rem" }}>
+              <label style={{ display: "block", marginBottom: "0.5rem", fontWeight: "600", fontSize: "0.875rem" }}>
+                Poll Expiry Date
+              </label>
+              <input
+                type="datetime-local"
+                className={styles.input}
+                value={newPoll.expiry_date}
+                onChange={(e) => setNewPoll({ ...newPoll, expiry_date: e.target.value })}
+              />
+            </div>
+
+            <div className={styles.modalActions}>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => setShowCreatePollModal(false)}
+              >
+                Cancel
+              </button>
+              <button className={styles.submitBtn} onClick={handleCreatePoll}>
+                Submit for Approval
               </button>
             </div>
           </div>
