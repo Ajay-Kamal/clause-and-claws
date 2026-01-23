@@ -6,7 +6,7 @@ import styles from "../styles/CoAuthorSelector.module.css";
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
 interface Profile {
@@ -22,7 +22,7 @@ interface CoAuthorSelectorProps {
   currentUserId: string;
 }
 
-const MAX_COAUTHORS = 3;
+const MAX_COAUTHORS = 2;
 
 export default function CoAuthorSelector({
   selectedCoAuthors,
@@ -41,7 +41,10 @@ export default function CoAuthorSelector({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
         setShowDropdown(false);
       }
     };
@@ -71,7 +74,7 @@ export default function CoAuthorSelector({
 
       const selectedIds = selectedCoAuthors.map((author) => author.id);
       const filteredResults = (data || []).filter(
-        (profile) => !selectedIds.includes(profile.id)
+        (profile) => !selectedIds.includes(profile.id),
       );
 
       setSearchResults(filteredResults);
@@ -113,14 +116,18 @@ export default function CoAuthorSelector({
   };
 
   const handleRemoveCoAuthor = (profileId: string) => {
-    onCoAuthorsChange(selectedCoAuthors.filter((author) => author.id !== profileId));
+    onCoAuthorsChange(
+      selectedCoAuthors.filter((author) => author.id !== profileId),
+    );
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.headerRow}>
         <label className={styles.label}>Co-Authors (Optional)</label>
-        <span className={`${styles.counter} ${isMaxReached ? styles.counterMax : ""}`}>
+        <span
+          className={`${styles.counter} ${isMaxReached ? styles.counterMax : ""}`}
+        >
           {selectedCoAuthors.length}/{MAX_COAUTHORS}
         </span>
       </div>
@@ -154,7 +161,8 @@ export default function CoAuthorSelector({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onFocus={() => {
-              if (searchResults.length > 0 && !isMaxReached) setShowDropdown(true);
+              if (searchResults.length > 0 && !isMaxReached)
+                setShowDropdown(true);
             }}
             disabled={isMaxReached}
           />
@@ -213,16 +221,25 @@ export default function CoAuthorSelector({
           </div>
         )}
 
-        {showDropdown && searchQuery && !isSearching && searchResults.length === 0 && !isMaxReached && (
-          <div className={styles.noResults}>
-            <p>No users found matching "{searchQuery}"</p>
-          </div>
-        )}
+        {showDropdown &&
+          searchQuery &&
+          !isSearching &&
+          searchResults.length === 0 &&
+          !isMaxReached && (
+            <div className={styles.noResults}>
+              <p>No users found matching "{searchQuery}"</p>
+            </div>
+          )}
       </div>
 
       {isMaxReached && (
         <div className={styles.warningBox}>
-          <svg className={styles.warningIcon} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className={styles.warningIcon}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -230,7 +247,10 @@ export default function CoAuthorSelector({
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
             />
           </svg>
-          <span>Maximum {MAX_COAUTHORS} co-authors reached. Remove one to add another.</span>
+          <span>
+            Maximum {MAX_COAUTHORS} co-authors reached. Remove one to add
+            another.
+          </span>
         </div>
       )}
 
@@ -249,9 +269,13 @@ export default function CoAuthorSelector({
                   className={styles.selectedAvatar}
                 />
                 <div className={styles.selectedInfo}>
-                  <span className={styles.selectedUsername}>@{author.username}</span>
+                  <span className={styles.selectedUsername}>
+                    @{author.username}
+                  </span>
                   {author.full_name && (
-                    <span className={styles.selectedFullName}>{author.full_name}</span>
+                    <span className={styles.selectedFullName}>
+                      {author.full_name}
+                    </span>
                   )}
                 </div>
                 <button

@@ -8,7 +8,7 @@ import CoAuthorSelector from "@/components/CoAuthorSelector";
 
 const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
 const generateSlug = (title: string): string => {
@@ -175,13 +175,13 @@ export default function UploadArticle() {
               const webpFile = new File(
                 [blob],
                 file.name.replace(/\.(jpe?g|png)$/i, ".webp"),
-                { type: "image/webp" }
+                { type: "image/webp" },
               );
 
               resolve(webpFile);
             },
             "image/webp",
-            0.9 // Quality setting (0-1)
+            0.9, // Quality setting (0-1)
           );
         };
 
@@ -500,7 +500,7 @@ export default function UploadArticle() {
       }
 
       alert(
-        "Draft saved successfully! You can continue editing from My Drafts page."
+        "Draft saved successfully! You can continue editing from My Drafts page.",
       );
       router.push("/drafts");
     } catch (error) {
@@ -711,7 +711,7 @@ export default function UploadArticle() {
 
       setUploadProgress(100);
       alert(
-        "Article submitted successfully! Co-author invitations have been sent."
+        "Article submitted successfully! Co-author invitations have been sent.",
       );
       setTimeout(() => router.push("/"), 500);
     } catch (error) {
@@ -774,7 +774,13 @@ export default function UploadArticle() {
             </p>
             <button
               type="button"
-              onClick={() => router.push("/guidelines")}
+              onClick={() =>
+                router.push(
+                  formData.type === "Article"
+                    ? "/guidelines-article"
+                    : "/guidelines",
+                )
+              }
               className={styles.viewGuidelinesButton}
             >
               View Submission Guidelines
@@ -946,8 +952,8 @@ export default function UploadArticle() {
                 dragActive
                   ? styles.dropZoneActive
                   : errors.file
-                  ? styles.dropZoneError
-                  : styles.dropZoneDefault
+                    ? styles.dropZoneError
+                    : styles.dropZoneDefault
               }`}
               onDrop={handleDrop}
               onDragOver={handleDrag}
@@ -1030,8 +1036,8 @@ export default function UploadArticle() {
                 thumbDragActive
                   ? styles.dropZoneActive
                   : errors.thumbnail
-                  ? styles.dropZoneError
-                  : styles.dropZoneDefault
+                    ? styles.dropZoneError
+                    : styles.dropZoneDefault
               }`}
               onDrop={handleThumbDrop}
               onDragOver={(e) => {
