@@ -76,6 +76,18 @@ const LAW_CATEGORIES: Record<string, string[]> = {
     "Feminist Legal Studies",
     "Critical Legal Studies",
   ],
+  "Geopolitical & International Affairs Tags (Broad-Level)": [
+    "Global Governance & Diplomacy",
+    "International Relations & Law",
+    "National Security & Strategic Affairs",
+    "Defence & Military Law",
+    "Foreign Policy & Treaties",
+    "Border Disputes & Territorial Law",
+    "International trade & Economic Sanctions",
+    "Maritime & Space Governance",
+    "Global Humanitarian Law",
+    "South Asian Geopolitics",
+  ],
 };
 
 type CategoryIconProps = {
@@ -513,6 +525,96 @@ const CategoryIcon: React.FC<CategoryIconProps> = ({ category, className }) => {
         <svg {...iconProps}>
           <circle cx="11" cy="11" r="8" />
           <path d="M21 21l-4.35-4.35" />
+        </svg>
+      );
+    case "Global Governance & Diplomacy":
+      return (
+        <svg {...iconProps}>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M2 12h20" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+          <circle cx="12" cy="12" r="2" />
+        </svg>
+      );
+    case "International Relations & Law":
+      return (
+        <svg {...iconProps}>
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <circle cx="19" cy="11" r="2" />
+          <path d="M19 8v7" />
+          <line x1="22" y1="11" x2="16" y2="11" />
+        </svg>
+      );
+    case "National Security & Strategic Affairs":
+      return (
+        <svg {...iconProps}>
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <circle cx="12" cy="11" r="3" />
+        </svg>
+      );
+    case "Defence & Military Law":
+      return (
+        <svg {...iconProps}>
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="M9 12l2 2 4-4" />
+          <line x1="12" y1="2" x2="12" y2="8" />
+        </svg>
+      );
+    case "Foreign Policy & Treaties":
+      return (
+        <svg {...iconProps}>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <circle cx="12" cy="15" r="3" />
+          <path d="M12 12v-2" />
+        </svg>
+      );
+    case "Border Disputes & Territorial Law":
+      return (
+        <svg {...iconProps}>
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+          <circle cx="12" cy="10" r="3" />
+          <path d="M12 2v3" />
+        </svg>
+      );
+    case "International trade & Economic Sanctions":
+      return (
+        <svg {...iconProps}>
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+          <line x1="12" y1="8" x2="12" y2="16" />
+          <path d="M17 11H9.5a1.5 1.5 0 0 0 0 3h3a1.5 1.5 0 0 1 0 3H7" />
+        </svg>
+      );
+    case "Maritime & Space Governance":
+      return (
+        <svg {...iconProps}>
+          <path d="M2 20a2.4 2.4 0 0 0 2 1 2.4 2.4 0 0 0 2-1 2.4 2.4 0 0 1 4 0" />
+          <path d="M14 20a2.4 2.4 0 0 0 4 0" />
+          <path d="M4 16 2 10h8l-2 6" />
+          <circle cx="18" cy="8" r="3" />
+          <path d="M18 3v2" />
+          <path d="M21 6l-1.5 1.5" />
+        </svg>
+      );
+    case "Global Humanitarian Law":
+      return (
+        <svg {...iconProps}>
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          <circle cx="12" cy="12" r="3" />
+        </svg>
+      );
+    case "South Asian Geopolitics":
+      return (
+        <svg {...iconProps}>
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10" />
+          <path d="M12 2a15.3 15.3 0 0 0-4 10 15.3 15.3 0 0 0 4 10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M8 8l8 8" />
+          <path d="M16 8l-8 8" />
         </svg>
       );
     default:
