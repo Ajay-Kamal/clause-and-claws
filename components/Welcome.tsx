@@ -16,21 +16,22 @@ export default function Welcome() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [currentPoint, setCurrentPoint] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
-  
+
   const slides = [
     { image: "./images/welcome-banner.svg", showText: true },
-    { image: "./images/welcome-banner.svg", showText: true },
-    { image: "./images/welcome-banner.svg", showText: true },
-    { image: "./images/welcome-banner.svg", showText: true },
+    { image: "./images/welcome-1.png", showText: false },
+    { image: "./images/welcome-2.png", showText: false },
+    { image: "./images/welcome-3.png", showText: false },
+    { image: "./images/welcome-4.png", showText: false },
   ];
 
-  const points = [
-    "Clause & Claws offers 100% free publication for all articles, because knowledge should never be behind a paywall.",
-    "Research Papers, Legislative Comments, Case Commentaries, and Book Reviews are subject to a transparent peer-review process.",
-    "A single review fee of just ₹700 covers submission of any two scholarly works.",
-    "Clause & Claws believes in merit-based publication, not pay-to-publish models.",
-    "Collaborated with Trustlaw.in to provide pro bono legal research support to NGOs and social enterprises.",
-  ];
+  // const points = [
+  //   "Clause & Claws offers 100% free publication for all articles, because knowledge should never be behind a paywall.",
+  //   "Research Papers, Legislative Comments, Case Commentaries, and Book Reviews are subject to a transparent peer-review process.",
+  //   "A single review fee of just ₹700 covers submission of any two scholarly works.",
+  //   "Clause & Claws believes in merit-based publication, not pay-to-publish models.",
+  //   "Collaborated with Trustlaw.in to provide pro bono legal research support to NGOs and social enterprises.",
+  // ];
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -40,17 +41,17 @@ export default function Welcome() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const pointTimer = setInterval(() => {
-      setIsVisible(false);
-      setTimeout(() => {
-        setCurrentPoint((prev) => (prev + 1) % points.length);
-        setIsVisible(true);
-      }, 500);
-    }, 5000);
+  // useEffect(() => {
+  //   const pointTimer = setInterval(() => {
+  //     setIsVisible(false);
+  //     setTimeout(() => {
+  //       setCurrentPoint((prev) => (prev + 1) % points.length);
+  //       setIsVisible(true);
+  //     }, 500);
+  //   }, 5000);
 
-    return () => clearInterval(pointTimer);
-  }, []);
+  //   return () => clearInterval(pointTimer);
+  // }, []);
 
   const goToSlide = (index: number) => {
     setCurrentSlide(index);
@@ -60,7 +61,7 @@ export default function Welcome() {
     <div className={styles.welcomeContainer}>
       <div className={styles.welcomeWrapper}>
         <div className={styles.carouselContainer}>
-          <div 
+          <div
             className={styles.carouselTrack}
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
@@ -69,7 +70,7 @@ export default function Welcome() {
                 key={index}
                 className={styles.carouselImage}
                 style={{
-                  backgroundImage: `url(${slide.image})`
+                  backgroundImage: `url(${slide.image})`,
                 }}
                 role="img"
                 aria-label="WELCOME"
@@ -89,24 +90,23 @@ export default function Welcome() {
             ))}
           </div>
         </div>
-        <div 
+        <div
           className={styles.welcomeText}
           style={{
             opacity: slides[currentSlide].showText ? 1 : 0,
-            visibility: slides[currentSlide].showText ? 'visible' : 'hidden',
-            transition: 'opacity 0.3s ease-in-out'
+            visibility: slides[currentSlide].showText ? "visible" : "hidden",
+            transition: "opacity 0.3s ease-in-out",
           }}
         >
           <h1>Where Clauses Speak,</h1>
           <h1>and Claws Create Change</h1>
           <p>
-            Cutting-edge legal scholarship for law students and 
-            professionals. Research, analysis and discourse on 
-            contemporary legal issues.
+            Cutting-edge legal scholarship for law students and professionals.
+            Research, analysis and discourse on contemporary legal issues.
           </p>
           <div className={styles["btn-section"]}>
             <Link href="/articles" className={styles["btn-primary"]}>
-              Explore Publications  
+              Explore Publications
             </Link>
             <Link
               href="https://chat.whatsapp.com/HW1zoefd3yt4Q3EAu9WDdg"
@@ -119,14 +119,9 @@ export default function Welcome() {
       </div>
       <div className={styles.associationSection}>
         <div className={styles.associationSectionWrapper}>
-          <div 
-            className={styles.rotatingText}
-            style={{ 
-              opacity: isVisible ? 1 : 0,
-              transition: 'opacity 0.5s ease-in-out'
-            }}
-          >
-            {points[currentPoint]}
+          <div className={styles.associationDiv}>
+            <span className={styles.associationText}>In Association With</span>
+            <p className={styles.associationP}>Trust Law.in</p>
           </div>
         </div>
       </div>

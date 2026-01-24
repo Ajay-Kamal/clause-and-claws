@@ -8,7 +8,7 @@ const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-interface PendingPoll {
+interface Poll {
   id: string;
   question: string;
   options: Array<{
@@ -20,17 +20,22 @@ interface PendingPoll {
   created_at: string;
   status: string;
   created_by: string;
+  total_votes: number;
   profiles: {
     full_name: string;
     email: string;
   };
 }
 
+type ViewMode = "pending" | "live";
+
 export default function ManagePolls() {
-  const [pendingPolls, setPendingPolls] = useState<PendingPoll[]>([]);
+  const [pendingPolls, setPendingPolls] = useState<Poll[]>([]);
+  const [livePolls, setLivePolls] = useState<Poll[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("pending");
 
   useEffect(() => {
     checkAdmin();
@@ -39,6 +44,7 @@ export default function ManagePolls() {
   useEffect(() => {
     if (isAdmin) {
       fetchPendingPolls();
+      fetchLivePolls();
     }
   }, [isAdmin]);
 
@@ -79,7 +85,6 @@ export default function ManagePolls() {
   };
 
   const fetchPendingPolls = async () => {
-    setLoading(true);
     console.log("Fetching pending polls...");
     
     const { data, error } = await supabase
@@ -100,7 +105,27 @@ export default function ManagePolls() {
     }
     
     setPendingPolls(data || []);
-    setLoading(false);
+  };
+
+  const fetchLivePolls = async () => {
+    console.log("Fetching live polls...");
+    
+    const { data, error } = await supabase
+      .from("polls")
+      .select(`
+        *,
+        profiles!polls_created_by_fkey(full_name, email)
+      `)
+      .eq("status", "approved")
+      .order("created_at", { ascending: false });
+    
+    if (error) {
+      console.error("Error fetching live polls:", error);
+    } else {
+      console.log("Fetched live polls:", data);
+    }
+    
+    setLivePolls(data || []);
   };
 
   const handleApprovePoll = async (pollId: string) => {
@@ -121,6 +146,7 @@ export default function ManagePolls() {
     } else {
       alert("Poll approved successfully!");
       fetchPendingPolls();
+      fetchLivePolls();
     }
   };
 
@@ -141,6 +167,25 @@ export default function ManagePolls() {
       } else {
         alert("Poll rejected");
         fetchPendingPolls();
+      }
+    }
+  };
+
+  const handleDeletePoll = async (pollId: string) => {
+    if (!user) return;
+
+    if (confirm("Are you sure you want to DELETE this live poll? This will permanently remove it and all associated votes.")) {
+      const { error } = await supabase
+        .from("polls")
+        .delete()
+        .eq("id", pollId);
+
+      if (error) {
+        console.error("Error deleting poll:", error);
+        alert("Failed to delete poll");
+      } else {
+        alert("Poll deleted successfully");
+        fetchLivePolls();
       }
     }
   };
@@ -189,6 +234,8 @@ export default function ManagePolls() {
     );
   }
 
+  const currentPolls = viewMode === "pending" ? pendingPolls : livePolls;
+
   return (
     <div style={{ 
       minHeight: "100vh", 
@@ -214,11 +261,54 @@ export default function ManagePolls() {
         <p style={{
           fontSize: "1.125rem",
           color: "#ffffff",
-          margin: 0,
+          margin: "0 0 1.5rem 0",
           fontFamily: "Arial, sans-serif"
         }}>
-          Review and approve pending polls
+          {viewMode === "pending" ? "Review and approve pending polls" : "Manage live polls"}
         </p>
+
+        {/* Tab Buttons */}
+        <div style={{ 
+          display: "flex", 
+          justifyContent: "center", 
+          gap: "1rem",
+          marginTop: "1.5rem"
+        }}>
+          <button
+            onClick={() => setViewMode("pending")}
+            style={{
+              backgroundColor: viewMode === "pending" ? "#ffffff" : "transparent",
+              color: viewMode === "pending" ? "#122645" : "#ffffff",
+              border: "2px solid #ffffff",
+              padding: "0.75rem 2rem",
+              fontSize: "1rem",
+              fontWeight: 600,
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontFamily: "Arial, sans-serif",
+              transition: "all 0.3s ease"
+            }}
+          >
+            Pending Polls ({pendingPolls.length})
+          </button>
+          <button
+            onClick={() => setViewMode("live")}
+            style={{
+              backgroundColor: viewMode === "live" ? "#ffffff" : "transparent",
+              color: viewMode === "live" ? "#122645" : "#ffffff",
+              border: "2px solid #ffffff",
+              padding: "0.75rem 2rem",
+              fontSize: "1rem",
+              fontWeight: 600,
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontFamily: "Arial, sans-serif",
+              transition: "all 0.3s ease"
+            }}
+          >
+            Live Polls ({livePolls.length})
+          </button>
+        </div>
       </div>
 
       {/* Content */}
@@ -227,7 +317,7 @@ export default function ManagePolls() {
         margin: "0 auto", 
         padding: "3rem 1rem" 
       }}>
-        {pendingPolls.length === 0 ? (
+        {currentPolls.length === 0 ? (
           <p style={{
             textAlign: "center",
             color: "#9ca3af",
@@ -235,11 +325,13 @@ export default function ManagePolls() {
             padding: "4rem 2rem",
             fontFamily: "garamond, serif"
           }}>
-            No pending polls to review
+            {viewMode === "pending" 
+              ? "No pending polls to review" 
+              : "No live polls currently"}
           </p>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-            {pendingPolls.map((poll) => (
+            {currentPolls.map((poll) => (
               <div
                 key={poll.id}
                 style={{
@@ -256,6 +348,21 @@ export default function ManagePolls() {
                   marginBottom: "1rem"
                 }}>
                   <div style={{ flex: 1 }}>
+                    {viewMode === "live" && (
+                      <div style={{
+                        display: "inline-block",
+                        backgroundColor: "#10b981",
+                        color: "white",
+                        padding: "0.375rem 0.75rem",
+                        borderRadius: "20px",
+                        fontSize: "0.75rem",
+                        fontWeight: 600,
+                        marginBottom: "0.75rem",
+                        fontFamily: "Arial, sans-serif"
+                      }}>
+                        LIVE
+                      </div>
+                    )}
                     <h2 style={{
                       fontSize: "1.5rem",
                       fontWeight: 700,
@@ -305,60 +412,110 @@ export default function ManagePolls() {
                         marginBottom: "0.25rem"
                       }}>
                         {option.text}
+                        {viewMode === "live" && (
+                          <span style={{ color: "#6b7280", marginLeft: "0.5rem" }}>
+                            ({option.votes} votes)
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ul>
                 </div>
 
-                <div style={{ marginBottom: "1.5rem" }}>
-                  <strong style={{ fontSize: "0.875rem", color: "#122645" }}>
-                    Expiry Date:
-                  </strong>
-                  <p style={{ 
-                    margin: "0.25rem 0 0 0", 
-                    fontSize: "0.875rem", 
-                    color: "#6b7280",
-                    fontFamily: "Arial, sans-serif"
-                  }}>
-                    {formatDate(poll.expiry_date)}
-                  </p>
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                  gap: "1rem",
+                  marginBottom: "1.5rem"
+                }}>
+                  <div>
+                    <strong style={{ fontSize: "0.875rem", color: "#122645" }}>
+                      Expiry Date:
+                    </strong>
+                    <p style={{ 
+                      margin: "0.25rem 0 0 0", 
+                      fontSize: "0.875rem", 
+                      color: "#6b7280",
+                      fontFamily: "Arial, sans-serif"
+                    }}>
+                      {formatDate(poll.expiry_date)}
+                    </p>
+                  </div>
+                  {viewMode === "live" && (
+                    <div>
+                      <strong style={{ fontSize: "0.875rem", color: "#122645" }}>
+                        Total Votes:
+                      </strong>
+                      <p style={{ 
+                        margin: "0.25rem 0 0 0", 
+                        fontSize: "0.875rem", 
+                        color: "#6b7280",
+                        fontFamily: "Arial, sans-serif"
+                      }}>
+                        {poll.total_votes} votes
+                      </p>
+                    </div>
+                  )}
                 </div>
 
+                {/* Action Buttons */}
                 <div style={{ display: "flex", gap: "1rem" }}>
-                  <button
-                    onClick={() => handleApprovePoll(poll.id)}
-                    style={{
-                      backgroundColor: "#10b981",
-                      color: "white",
-                      border: "none",
-                      padding: "0.75rem 1.5rem",
-                      fontSize: "1rem",
-                      fontWeight: 600,
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      fontFamily: "Arial, sans-serif",
-                      flex: 1
-                    }}
-                  >
-                    Approve Poll
-                  </button>
-                  <button
-                    onClick={() => handleRejectPoll(poll.id)}
-                    style={{
-                      backgroundColor: "#dc2626",
-                      color: "white",
-                      border: "none",
-                      padding: "0.75rem 1.5rem",
-                      fontSize: "1rem",
-                      fontWeight: 600,
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      fontFamily: "Arial, sans-serif",
-                      flex: 1
-                    }}
-                  >
-                    Reject Poll
-                  </button>
+                  {viewMode === "pending" ? (
+                    <>
+                      <button
+                        onClick={() => handleApprovePoll(poll.id)}
+                        style={{
+                          backgroundColor: "#10b981",
+                          color: "white",
+                          border: "none",
+                          padding: "0.75rem 1.5rem",
+                          fontSize: "1rem",
+                          fontWeight: 600,
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          fontFamily: "Arial, sans-serif",
+                          flex: 1
+                        }}
+                      >
+                        Approve Poll
+                      </button>
+                      <button
+                        onClick={() => handleRejectPoll(poll.id)}
+                        style={{
+                          backgroundColor: "#dc2626",
+                          color: "white",
+                          border: "none",
+                          padding: "0.75rem 1.5rem",
+                          fontSize: "1rem",
+                          fontWeight: 600,
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          fontFamily: "Arial, sans-serif",
+                          flex: 1
+                        }}
+                      >
+                        Reject Poll
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => handleDeletePoll(poll.id)}
+                      style={{
+                        backgroundColor: "#dc2626",
+                        color: "white",
+                        border: "none",
+                        padding: "0.75rem 1.5rem",
+                        fontSize: "1rem",
+                        fontWeight: 600,
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontFamily: "Arial, sans-serif",
+                        width: "100%"
+                      }}
+                    >
+                      Delete Poll
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

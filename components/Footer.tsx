@@ -324,7 +324,7 @@ export default function Footer() {
 
         <div className={styles.footerBottom}>
           <div className={styles.copyright}>
-            <p>Clause and Claws. All rights reserved.</p>
+            <p>Clause and Claws</p>
           </div>
           <div className={styles.legalLinks}>
             <a

@@ -188,7 +188,7 @@ export default function GuidelinesPage() {
             onClick={() => router.back()}
             className={styles.backButton}
           >
-            Back to Submission Form
+            Back
           </button>
         </div>
       </div>

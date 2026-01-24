@@ -142,7 +142,7 @@ export default function TermsOfServicePage() {
         <section className={styles.section}>
           <h2 className={styles.heading}>CONTACT:</h2>
           <p className={styles.text}>
-            Contact the Grievance Redressal officer at <a href="mailto:puravgarg@clauseandclaws.com" className={styles.link}>puravgarg@clauseandclaws.com</a> with questions or complaints.
+            Contact the Grievance Redressal officer at <a href="mailto:info.clauseandclaws@gmail.com" className={styles.link}>info.clauseandclaws@gmail.com</a> with questions or complaints.
           </p>
         </section>
 

@@ -726,7 +726,7 @@ const CommunityHub: React.FC = () => {
                           rel="noopener noreferrer"
                           className={styles.registerBtn}
                         >
-                          Register Now
+                          Know More
                         </a>
                       ) : (
                         <button className={styles.expiredBtn} disabled>

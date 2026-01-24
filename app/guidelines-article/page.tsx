@@ -55,7 +55,7 @@ export default function ArticlesPage() {
               <strong>Bluebook (21st Edition)</strong> citation style.
             </li>
             <li style={styles.listItem}>
-              <span style={styles.bullet}>•</span>A complete bibliography shall
+              <span style={styles.bullet}>•</span>Only use bibliography shall
               be included at the end of the article.
             </li>
           </ul>
@@ -231,7 +231,7 @@ export default function ArticlesPage() {
                 "0 2px 8px rgba(255, 193, 7, 0.3)";
             }}
           >
-            Back to Submission Form
+            Back
           </button>
         </div>
       </div>
