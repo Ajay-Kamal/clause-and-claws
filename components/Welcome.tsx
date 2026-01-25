@@ -121,7 +121,7 @@ export default function Welcome() {
         <div className={styles.associationSectionWrapper}>
           <div className={styles.associationDiv}>
             <span className={styles.associationText}>In Association With</span>
-            <p className={styles.associationP}>Trust Law.in</p>
+            <p className={styles.associationP}>Trust Law Offices - Advocates & Solicitors</p>
           </div>
         </div>
       </div>
