@@ -23,6 +23,9 @@ export default function Welcome() {
     { image: "./images/welcome-2.png", showText: false },
     { image: "./images/welcome-3.png", showText: false },
     { image: "./images/welcome-4.png", showText: false },
+    { image: "./images/welcome-5.jpg", showText: false },
+    { image: "./images/welcome-6.jpg", showText: false },
+    { image: "./images/welcome-7.jpg", showText: false },
   ];
 
   // const points = [
