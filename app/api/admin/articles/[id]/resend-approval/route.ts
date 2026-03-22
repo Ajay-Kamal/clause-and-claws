@@ -21,9 +21,7 @@ export async function POST(req: Request, context: any) {
   );
   const articleId = context.params.id;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
@@ -44,59 +42,57 @@ export async function POST(req: Request, context: any) {
   if (articleErr || !article)
     return NextResponse.json({ error: "Article not found" }, { status: 404 });
 
-  // create token
   const token = crypto.randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
   const { error: tokenErr } = await supabase
     .from("utr_submission_tokens")
-    .insert([
-      {
-        token,
-        article_id: articleId,
-        user_id: article.author_id,
-        expires_at: expiresAt,
-      },
-    ]);
+    .insert([{ token, article_id: articleId, user_id: article.author_id, expires_at: expiresAt }]);
   if (tokenErr)
     return NextResponse.json({ error: tokenErr.message }, { status: 500 });
 
-  // send email (QR)
-  const paymentQRContent = `UPI://pay?pa=yourupi@bank&pn=LawJournal&tn=Payment for ${article.title}`;
-  const qrDataUrl = await QRCode.toDataURL(paymentQRContent);
-
   try {
+    // ✅ Generate QR as a Buffer (not base64 data URL)
+    const paymentQRContent = `upi://pay?pa=yourupi@bank&pn=LawJournal&tn=Payment for ${article.title}`;
+    const qrBuffer = await QRCode.toBuffer(paymentQRContent, { width: 240 });
+
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 587),
+      host: "smtp.gmail.com",
+      port: 587,
       secure: false,
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      tls: { rejectUnauthorized: false }, // add this
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS, // ⚠️ Must be a Gmail App Password, not your login password
+      },
     });
 
     const utrLink = `${process.env.NEXT_PUBLIC_BASE_URL}/payment/submit-utr?token=${token}`;
+
     const mailHtml = `
       <p>Dear ${article.profiles?.full_name ?? "Author"},</p>
 
-<p>This is a resend notification regarding your article titled "<strong>${article.title}</strong>", which has been <strong style="color:#2e7d32;">approved</strong> for publication in the <b>Clause & Claws Journal</b>.</p>
+      <p>This is a resend notification regarding your article titled "<strong>${article.title}</strong>",
+      which has been <strong style="color:#2e7d32;">approved</strong> for publication in the
+      <b>Clause &amp; Claws Journal</b>.</p>
 
-<p>To proceed, please complete the payment using the QR code below and submit your UTR (transaction reference number) through the secure link provided.</p>
+      <p>To proceed, please complete the payment using the QR code below and submit your UTR
+      (transaction reference number) through the secure link provided.</p>
 
-<p><b>QR Code:</b><br />
-<img src="${qrDataUrl}" alt="QR Code" style="max-width:240px; margin-top:6px;" /></p>
+      <p><b>QR Code:</b><br />
+      <img src="cid:payment-qr" alt="Payment QR Code" style="max-width:240px; margin-top:6px;" /></p>
 
-<p><b>Submit UTR:</b> <a href="${utrLink}" target="_blank" rel="noopener">${utrLink}</a></p>
+      <p><b>Submit UTR:</b> <a href="${utrLink}" target="_blank" rel="noopener">${utrLink}</a></p>
 
-<p><b>Expires:</b> ${expiresAt}</p>
+      <p><b>Expires:</b> ${expiresAt}</p>
 
-<p>If you encounter any issues while completing the payment or submitting your UTR, please contact us at <b>clauseandclaws@gmail.com</b>.</p>
+      <p>If you encounter any issues, please contact us at <b>clauseandclaws@gmail.com</b>.</p>
 
-<p>Thank you once again for your valuable contribution to <b>Clause & Claws</b>. We look forward to publishing your work soon.</p>
+      <p>Thank you for your valuable contribution to <b>Clause &amp; Claws</b>.
+      We look forward to publishing your work soon.</p>
 
-<p>Warm regards,</p>
-<p><b>Editorial Team</b><br />
-<b>Clause & Claws Journal</b></p>
-
+      <p>Warm regards,<br />
+      <b>Editorial Team</b><br />
+      <b>Clause &amp; Claws Journal</b></p>
     `;
 
     await transporter.sendMail({
@@ -104,6 +100,15 @@ export async function POST(req: Request, context: any) {
       to: article.profiles?.email,
       subject: "[Clause & Claws] Approval link (resend) — submit UTR",
       html: mailHtml,
+      // ✅ QR attached as inline image, referenced via cid:payment-qr
+      attachments: [
+        {
+          filename: "payment-qr.png",
+          content: qrBuffer,
+          cid: "payment-qr",
+          contentDisposition: "inline",
+        },
+      ],
     });
 
     return NextResponse.json({ success: true, expires_at: expiresAt });
