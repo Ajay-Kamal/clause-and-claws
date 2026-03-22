@@ -4,7 +4,6 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
-import QRCode from "qrcode";
 
 export async function POST(req: Request, context: any) {
   const cookiesStore = await cookies();
@@ -21,7 +20,9 @@ export async function POST(req: Request, context: any) {
   );
   const articleId = context.params.id;
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user)
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
@@ -47,15 +48,22 @@ export async function POST(req: Request, context: any) {
 
   const { error: tokenErr } = await supabase
     .from("utr_submission_tokens")
-    .insert([{ token, article_id: articleId, user_id: article.author_id, expires_at: expiresAt }]);
+    .insert([
+      {
+        token,
+        article_id: articleId,
+        user_id: article.author_id,
+        expires_at: expiresAt,
+      },
+    ]);
   if (tokenErr)
     return NextResponse.json({ error: tokenErr.message }, { status: 500 });
 
   try {
     // ✅ Generate QR as a Buffer (not base64 data URL)
-    const paymentQRContent = `upi://pay?pa=yourupi@bank&pn=LawJournal&tn=Payment for ${article.title}`;
-    const qrBuffer = await QRCode.toBuffer(paymentQRContent, { width: 240 });
-
+    // ✅ Replace with:
+    const qrDataUrl =
+      "https://rvydvbikckoourvzhyml.supabase.co/storage/v1/object/public/QR%20Code/WhatsApp%20Image%202025-10-05%20at%2001.39.57_5500854d.jpg";
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 587,
@@ -79,7 +87,9 @@ export async function POST(req: Request, context: any) {
       (transaction reference number) through the secure link provided.</p>
 
       <p><b>QR Code:</b><br />
-      <img src="cid:payment-qr" alt="Payment QR Code" style="max-width:240px; margin-top:6px;" /></p>
+      <img src="${qrDataUrl}" alt="QR Code" style="max-width:240px; margin-top:6px;" /></p>
+
+      <p>If the QR code is not displayed, please use this UPI ID: <b>6267535508@ptyes</b></p>
 
       <p><b>Submit UTR:</b> <a href="${utrLink}" target="_blank" rel="noopener">${utrLink}</a></p>
 
@@ -100,17 +110,8 @@ export async function POST(req: Request, context: any) {
       to: article.profiles?.email,
       subject: "[Clause & Claws] Approval link (resend) — submit UTR",
       html: mailHtml,
-      // ✅ QR attached as inline image, referenced via cid:payment-qr
-      attachments: [
-        {
-          filename: "payment-qr.png",
-          content: qrBuffer,
-          cid: "payment-qr",
-          contentDisposition: "inline",
-        },
-      ],
     });
-
+    
     return NextResponse.json({ success: true, expires_at: expiresAt });
   } catch (err: any) {
     console.error("Resend mail error", err);
