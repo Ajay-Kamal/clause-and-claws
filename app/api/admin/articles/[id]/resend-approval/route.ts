@@ -17,15 +17,23 @@ export async function POST(req: Request, context: any) {
           return cookiesStore.get(name)?.value;
         },
       },
-    }
+    },
   );
   const articleId = context.params.id;
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user)
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
 
-  const { data: profile } = await supabase.from("profiles").select("is_admin").eq("id", user.id).single();
-  if (!profile?.is_admin) return NextResponse.json({ error: "Admin only" }, { status: 403 });
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .single();
+  if (!profile?.is_admin)
+    return NextResponse.json({ error: "Admin only" }, { status: 403 });
 
   const { data: article, error: articleErr } = await supabase
     .from("articles")
@@ -33,16 +41,25 @@ export async function POST(req: Request, context: any) {
     .eq("id", articleId)
     .maybeSingle();
 
-  if (articleErr || !article) return NextResponse.json({ error: "Article not found" }, { status: 404 });
+  if (articleErr || !article)
+    return NextResponse.json({ error: "Article not found" }, { status: 404 });
 
   // create token
   const token = crypto.randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
 
-  const { error: tokenErr } = await supabase.from("utr_submission_tokens").insert([
-    { token, article_id: articleId, user_id: article.author_id, expires_at: expiresAt },
-  ]);
-  if (tokenErr) return NextResponse.json({ error: tokenErr.message }, { status: 500 });
+  const { error: tokenErr } = await supabase
+    .from("utr_submission_tokens")
+    .insert([
+      {
+        token,
+        article_id: articleId,
+        user_id: article.author_id,
+        expires_at: expiresAt,
+      },
+    ]);
+  if (tokenErr)
+    return NextResponse.json({ error: tokenErr.message }, { status: 500 });
 
   // send email (QR)
   const paymentQRContent = `UPI://pay?pa=yourupi@bank&pn=LawJournal&tn=Payment for ${article.title}`;
@@ -54,6 +71,7 @@ export async function POST(req: Request, context: any) {
       port: Number(process.env.SMTP_PORT || 587),
       secure: false,
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+      tls: { rejectUnauthorized: false }, // add this
     });
 
     const utrLink = `${process.env.NEXT_PUBLIC_BASE_URL}/payment/submit-utr?token=${token}`;
@@ -91,6 +109,9 @@ export async function POST(req: Request, context: any) {
     return NextResponse.json({ success: true, expires_at: expiresAt });
   } catch (err: any) {
     console.error("Resend mail error", err);
-    return NextResponse.json({ error: "Failed to send email: " + err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to send email: " + err.message },
+      { status: 500 },
+    );
   }
 }
