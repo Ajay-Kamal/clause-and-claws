@@ -83,6 +83,8 @@ export async function POST(req: Request, context: any) {
       which has been <strong style="color:#2e7d32;">approved</strong> for publication in the
       <b>Clause &amp; Claws Journal</b>.</p>
 
+      <p><b>Publication Fee:</b> ₹399</p>
+
       <p>To proceed, please complete the payment using the QR code below and submit your UTR
       (transaction reference number) through the secure link provided.</p>
 
@@ -111,7 +113,6 @@ export async function POST(req: Request, context: any) {
       subject: "[Clause & Claws] Approval link (resend) — submit UTR",
       html: mailHtml,
     });
-    
     return NextResponse.json({ success: true, expires_at: expiresAt });
   } catch (err: any) {
     console.error("Resend mail error", err);
