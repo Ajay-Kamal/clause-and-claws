@@ -59,15 +59,16 @@ export default function PaymentsPage() {
     alert("Payment verified & published; email sent.");
   }
 
-  async function rejectPayment(id: string) {
-    const reason = prompt("Enter payment rejection reason (optional):") || "";
-    const res = await adminFetch(`/api/admin/articles/${id}/reject-payment`, { 
-      method: "POST", 
-      body: { reason } 
-    });
-    if (res?.error) throw new Error(res.error);
-    alert("Payment rejected and author notified.");
-  }
+async function rejectPayment(id: string) {
+  const reason = prompt("Enter rejection reason (min 10 chars):") || "";
+  if (reason.trim().length < 10) return alert("Reason too short (min 10 chars)");
+  const res = await adminFetch(`/api/admin/articles/${id}/reject`, {
+    method: "POST",
+    body: { rejection_reason: reason },
+  });
+  if (res?.error) throw new Error(res.error);
+  alert("Payment rejected and author notified.");
+}
 
   if (loading) {
     return (

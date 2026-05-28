@@ -107,6 +107,8 @@ export async function POST(req: Request, context: any): Promise<NextResponse> {
 
         <p>As part of the publication process, we kindly request you to complete the payment at your convenience using the QR code provided below or through the UPI ID mentioned.</p>
 
+       <p><b>Publication Fee:</b> ₹700</p>
+
         <p><b>Article Token:</b> ${article.slug}</p>
 
         <p><b>QR Code:</b><br />

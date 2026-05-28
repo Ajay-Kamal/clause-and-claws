@@ -15,20 +15,20 @@ export async function POST(req: Request, context: any) {
           return cookiesStore.get(name)?.value;
         },
       },
-    }
+    },
   );
-  const articleId = context.params.id;
+  const { id: articleId } = await context.params;
   const body = await req.json();
+  console.log("BODY RECEIVED:", body);
   const reason = (body?.rejection_reason || "").trim();
 
   if (!reason || reason.length < 10) {
     return NextResponse.json(
       { error: "rejection_reason required (min 10 chars)" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
-  // Auth & admin check
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -111,7 +111,7 @@ export async function POST(req: Request, context: any) {
     console.error("Rejection mail error:", err);
     return NextResponse.json(
       { error: "Updated DB but failed to send email: " + err.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
