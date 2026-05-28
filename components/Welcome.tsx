@@ -3,110 +3,71 @@
 import { useState, useEffect } from "react";
 import styles from "../styles/Welcome.module.css";
 import Link from "next/link";
-import { EB_Garamond } from "next/font/google";
 
-const eb = EB_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "700", "800"],
-  variable: "--font-eb",
-  display: "swap",
-});
+const slidingPoints = [
+  "100% free publication for all articles — because knowledge should never be behind a paywall.",
+  "Research Papers, Legislative Comments, Case Commentaries, and Book Reviews undergo a transparent peer-review process.",
+  "Merit-based publication, not pay-to-publish models.",
+  "A single review fee of just ₹700 covers submission of any scholarly work.",
+  "Editorial standards aligned with academic and professional expectations.",
+  "Independent legal research & online publication platform — making legal knowledge accessible, ethical, and student-friendly.",
+  "Transparent peer-review process focused on quality, not favouritism.",
+];
 
 export default function Welcome() {
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [currentPoint, setCurrentPoint] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
-
-  const slides = [
-    { image: "./images/welcome-banner.svg", showText: true },
-    { image: "./images/welcome-1.png", showText: false },
-    { image: "./images/welcome-2.png", showText: false },
-    { image: "./images/welcome-3.png", showText: false },
-    { image: "./images/welcome-4.png", showText: false },
-    { image: "./images/welcome-5.jpg", showText: false },
-    { image: "./images/welcome-6.jpg", showText: false },
-    { image: "./images/welcome-7.jpg", showText: false },
-  ];
-
-  // const points = [
-  //   "Clause & Claws offers 100% free publication for all articles, because knowledge should never be behind a paywall.",
-  //   "Research Papers, Legislative Comments, Case Commentaries, and Book Reviews are subject to a transparent peer-review process.",
-  //   "A single review fee of just ₹700 covers submission of any two scholarly works.",
-  //   "Clause & Claws believes in merit-based publication, not pay-to-publish models.",
-  //   "Collaborated with Trustlaw.in to provide pro bono legal research support to NGOs and social enterprises.",
-  // ];
+  const [fade, setFade] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
+      setFade(false);
+      setTimeout(() => {
+        setCurrentPoint((prev) => (prev + 1) % slidingPoints.length);
+        setFade(true);
+      }, 400);
     }, 4000);
-
     return () => clearInterval(timer);
   }, []);
-
-  // useEffect(() => {
-  //   const pointTimer = setInterval(() => {
-  //     setIsVisible(false);
-  //     setTimeout(() => {
-  //       setCurrentPoint((prev) => (prev + 1) % points.length);
-  //       setIsVisible(true);
-  //     }, 500);
-  //   }, 5000);
-
-  //   return () => clearInterval(pointTimer);
-  // }, []);
-
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-  };
 
   return (
     <div className={styles.welcomeContainer}>
       <div className={styles.welcomeWrapper}>
-        <div className={styles.carouselContainer}>
-          <div
-            className={styles.carouselTrack}
-            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-          >
-            {slides.map((slide, index) => (
-              <div
-                key={index}
-                className={styles.carouselImage}
-                style={{
-                  backgroundImage: `url(${slide.image})`,
-                }}
-                role="img"
-                aria-label="WELCOME"
-              />
-            ))}
-          </div>
-          <div className={styles.carouselDots}>
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                className={`${styles.dot} ${
-                  index === currentSlide ? styles.activeDot : ""
-                }`}
-                onClick={() => goToSlide(index)}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-        </div>
+        {/* Fixed background banner via inline style to avoid CSS module path issues */}
         <div
-          className={styles.welcomeText}
-          style={{
-            opacity: slides[currentSlide].showText ? 1 : 0,
-            visibility: slides[currentSlide].showText ? "visible" : "hidden",
-            transition: "opacity 0.3s ease-in-out",
-          }}
-        >
+          className={styles.bannerBackground}
+          style={{ backgroundImage: "url('./images/welcome-banner.svg')" }}
+        />
+
+        {/* Text overlay */}
+        <div className={styles.welcomeText}>
+          {/* Static heading — always visible */}
           <h1>Where Clauses Speak,</h1>
           <h1>and Claws Create Change</h1>
-          <p>
+          <p className={styles.staticSubtitle}>
             Cutting-edge legal scholarship for law students and professionals.
             Research, analysis and discourse on contemporary legal issues.
           </p>
+
+          {/* Sliding points below */}
+          <p
+            className={styles.slidingPoint}
+            style={{ opacity: fade ? 1 : 0 }}
+          >
+            {slidingPoints[currentPoint]}
+          </p>
+
+          {/* Dots indicator */}
+          <div className={styles.textDots}>
+            {slidingPoints.map((_, index) => (
+              <button
+                key={index}
+                className={`${styles.dot} ${index === currentPoint ? styles.activeDot : ""}`}
+                onClick={() => setCurrentPoint(index)}
+                aria-label={`Go to point ${index + 1}`}
+              />
+            ))}
+          </div>
+
           <div className={styles["btn-section"]}>
             <Link href="/articles" className={styles["btn-primary"]}>
               Explore Publications
@@ -120,6 +81,7 @@ export default function Welcome() {
           </div>
         </div>
       </div>
+
       <div className={styles.associationSection}>
         <div className={styles.associationSectionWrapper}>
           <div className={styles.associationDiv}>
